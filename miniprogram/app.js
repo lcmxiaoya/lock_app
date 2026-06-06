@@ -5,8 +5,18 @@ App({
     baseUrl: 'http://172.28.44.133:8080'
   },
 
+  // true = 微信云托管线上，false = 本地开发
+  useCloud: true,
+  cloudHosting: {
+    env: 'prod-d7gkt6iuhf270390a',
+    service: 'ttlock-server'
+  },
+
   onLaunch() {
-    // Check if user is logged in
+    if (this.useCloud) {
+      wx.cloud.init();
+    }
+
     const token = wx.getStorageSync('token');
     const userInfo = wx.getStorageSync('userInfo');
     

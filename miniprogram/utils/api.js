@@ -1,56 +1,72 @@
 const app = getApp();
 
 /**
- * Request wrapper with token
+ * Request wrapper — 本地用 wx.request，线上用 wx.cloud.callContainer
  */
 function request(options) {
   return new Promise((resolve, reject) => {
     const token = app.globalData.token;
-    
-    wx.request({
-      url: `${app.globalData.baseUrl}${options.url}`,
-      method: options.method || 'GET',
-      data: options.data || {},
-      header: {
+
+    if (app.useCloud) {
+      // 微信云托管模式
+      const header = {
         'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-      },
-      success(res) {
-        if (res.statusCode === 200) {
-          const data = res.data;
-          if (data.code === 0) {
-            resolve(data.data);
-          } else {
-            wx.showToast({
-              title: data.message || 'Request failed',
-              icon: 'none'
-            });
-            reject(data);
-          }
-        } else if (res.statusCode === 401) {
-          // Token expired, redirect to login
-          app.clearLoginInfo();
-          wx.redirectTo({
-            url: '/pages/login/login'
-          });
-          reject({ code: 1002, message: 'Token expired' });
-        } else {
-          wx.showToast({
-            title: 'Network error',
-            icon: 'none'
-          });
-          reject({ code: res.statusCode, message: 'Network error' });
-        }
-      },
-      fail(err) {
-        wx.showToast({
-          title: 'Network error',
-          icon: 'none'
-        });
-        reject(err);
+        'X-WX-SERVICE': app.cloudHosting.service
+      };
+      if (token) {
+        header['Authorization'] = `Bearer ${token}`;
       }
-    });
+
+      wx.cloud.callContainer({
+        config: { env: app.cloudHosting.env },
+        path: options.url,
+        method: options.method || 'GET',
+        header,
+        data: options.data || {},
+        success(res) { handleResponse(res, resolve, reject) },
+        fail(err) { handleError(reject, err) }
+      });
+    } else {
+      // 本地开发模式
+      const header = { 'Content-Type': 'application/json' };
+      if (token) {
+        header['Authorization'] = `Bearer ${token}`;
+      }
+
+      wx.request({
+        url: `${app.globalData.baseUrl}${options.url}`,
+        method: options.method || 'GET',
+        data: options.data || {},
+        header,
+        success(res) { handleResponse(res, resolve, reject) },
+        fail(err) { handleError(reject, err) }
+      });
+    }
   });
+}
+
+function handleResponse(res, resolve, reject) {
+  if (res.statusCode === 200) {
+    const data = res.data;
+    if (data.code === 0) {
+      resolve(data.data);
+    } else {
+      wx.showToast({ title: data.message || 'Request failed', icon: 'none' });
+      reject(data);
+    }
+  } else if (res.statusCode === 401) {
+    app.clearLoginInfo();
+    wx.redirectTo({ url: '/pages/login/login' });
+    reject({ code: 1002, message: 'Token expired' });
+  } else {
+    wx.showToast({ title: 'Network error', icon: 'none' });
+    reject({ code: res.statusCode, message: 'Network error' });
+  }
+}
+
+function handleError(reject, err) {
+  wx.showToast({ title: 'Network error', icon: 'none' });
+  reject(err);
 }
 
 /**
