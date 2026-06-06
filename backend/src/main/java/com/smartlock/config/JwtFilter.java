@@ -10,37 +10,49 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
+
+    private static final Set<String> PUBLIC_PATHS = Set.of(
+        "/api/user/sendCode",
+        "/api/user/register",
+        "/api/user/login"
+    );
 
     private final JwtUtil jwtUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
                                     FilterChain filterChain) throws ServletException, IOException {
+        String path = request.getRequestURI();
+
+        // Allow public paths without authentication
+        if (PUBLIC_PATHS.contains(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
-        log.info("JwtFilter - Request URI: {}, Auth header: {}", request.getRequestURI(), authHeader);
-        
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            log.info("JwtFilter - Token: {}", token.substring(0, Math.min(20, token.length())) + "...");
-            
+
             if (jwtUtil.validateToken(token)) {
                 Long userId = jwtUtil.getUserIdFromToken(token);
                 String username = jwtUtil.getUsernameFromToken(token);
-                log.info("JwtFilter - userId: {}, username: {}", userId, username);
-                
+
                 request.setAttribute("userId", userId);
                 request.setAttribute("username", username);
-            } else {
-                log.warn("JwtFilter - Token validation failed");
+                filterChain.doFilter(request, response);
+                return;
             }
-        } else {
-            log.warn("JwtFilter - No valid Authorization header");
         }
-        
-        filterChain.doFilter(request, response);
+
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().write("{\"success\":false,\"code\":401,\"message\":\"未登录或登录已过期，请重新登录\"}");
     }
 }
