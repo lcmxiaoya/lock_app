@@ -23,7 +23,7 @@ public class DatabaseInitializer {
 
     private void dropPartialUniqueIndex() {
         try {
-            jdbcTemplate.execute("DROP INDEX IF EXISTS idx_ekey_active_user_lock");
+            jdbcTemplate.execute("DROP INDEX IF EXISTS idx_ekey_active_user_lock ON ekey");
             log.info("Dropped partial unique index idx_ekey_active_user_lock");
         } catch (Exception e) {
             log.warn("Failed to drop idx_ekey_active_user_lock (may not exist)", e);
