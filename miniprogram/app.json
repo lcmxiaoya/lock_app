@@ -28,20 +28,14 @@
       {
         "pagePath": "pages/lock-list/lock-list",
         "text": "首页",
-        "iconPath": "images/home.png",
-        "selectedIconPath": "images/home-active.png"
-      },
-      {
-        "pagePath": "pages/key-list/key-list",
-        "text": "钥匙",
-        "iconPath": "images/key.png",
-        "selectedIconPath": "images/key-active.png"
+        "iconPath": "images/blank.png",
+        "selectedIconPath": "images/blank.png"
       },
       {
         "pagePath": "pages/profile/profile",
         "text": "我的",
-        "iconPath": "images/user.png",
-        "selectedIconPath": "images/user-active.png"
+        "iconPath": "images/blank.png",
+        "selectedIconPath": "images/blank.png"
       }
     ]
   },
