@@ -1,6 +1,7 @@
 .lock-page {
   min-height: 100vh;
   background-color: var(--bg-color);
+  padding-bottom: 120rpx;
 }
 
 .page-header {

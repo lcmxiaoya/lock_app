@@ -18,3 +18,4 @@
     <text>退出登录</text>
   </view>
 </view>
+<custom-tab-bar></custom-tab-bar>

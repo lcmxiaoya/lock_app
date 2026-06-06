@@ -20,6 +20,7 @@
     "navigationBarTextStyle": "white"
   },
   "tabBar": {
+    "custom": true,
     "color": "#999",
     "selectedColor": "#2979ff",
     "backgroundColor": "#fff",
@@ -28,14 +29,14 @@
       {
         "pagePath": "pages/lock-list/lock-list",
         "text": "首页",
-        "iconPath": "images/blank.png",
-        "selectedIconPath": "images/blank.png"
+        "iconPath": "images/home.png",
+        "selectedIconPath": "images/home-active.png"
       },
       {
         "pagePath": "pages/profile/profile",
         "text": "我的",
-        "iconPath": "images/blank.png",
-        "selectedIconPath": "images/blank.png"
+        "iconPath": "images/user.png",
+        "selectedIconPath": "images/user-active.png"
       }
     ]
   },

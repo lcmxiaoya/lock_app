@@ -23,8 +23,16 @@ public class DatabaseInitializer {
 
     private void dropPartialUniqueIndex() {
         try {
-            jdbcTemplate.execute("DROP INDEX idx_ekey_active_user_lock ON ekey");
-            log.info("Dropped partial unique index idx_ekey_active_user_lock");
+            String db = jdbcTemplate.queryForObject("SELECT DATABASE()", String.class);
+            Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = ? AND table_name = 'ekey' AND index_name = 'idx_ekey_active_user_lock'",
+                Integer.class, db);
+            if (count != null && count > 0) {
+                jdbcTemplate.execute("DROP INDEX idx_ekey_active_user_lock ON ekey");
+                log.info("Dropped partial unique index idx_ekey_active_user_lock");
+            } else {
+                log.info("Index idx_ekey_active_user_lock does not exist, skipping");
+            }
         } catch (Exception e) {
             log.warn("Failed to drop idx_ekey_active_user_lock (may not exist)", e);
         }
