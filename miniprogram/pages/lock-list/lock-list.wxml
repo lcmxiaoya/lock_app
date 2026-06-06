@@ -1,0 +1,62 @@
+<view class="lock-page">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <view class="header-row">
+        <view>
+          <view class="page-title">我的锁</view>
+          <view class="page-desc" wx:if="{{locks.length > 0}}">共 {{locks.length}} 把锁</view>
+        </view>
+        <view class="header-add-btn" bindtap="goAddLock">
+          <view class="icon-add" style="color: #fff; width: 32rpx; height: 32rpx;"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="content-area">
+    <!-- 锁列表 -->
+    <view class="lock-list" wx:if="{{locks.length > 0}}">
+      <view class="lock-card" wx:for="{{locks}}" wx:key="id" bindtap="goLockControl" data-id="{{item.id}}">
+        <view class="lock-card-top">
+          <view class="lock-icon-wrap">
+            <view class="lock-icon-bg">
+              <view class="icon-lock" style="color: #fff; width: 48rpx; height: 48rpx; border-width: 5rpx;"></view>
+            </view>
+          </view>
+          <view class="lock-info">
+            <view class="lock-name">{{item.lockName || '未命名锁'}}</view>
+            <view class="lock-alias" wx:if="{{item.lockAlias}}">{{item.lockAlias}}</view>
+          </view>
+          <view class="lock-status-dot {{item.electricQuantity > 20 ? 'online' : 'low'}}"></view>
+        </view>
+        
+        <view class="lock-card-bottom">
+          <view class="lock-meta">
+            <view class="meta-item">
+              <view class="icon-battery" style="color: {{item.electricQuantity > 20 ? '#4CAF50' : '#FF9800'}}; width: 36rpx; height: 18rpx;"></view>
+              <text class="meta-value">{{item.electricQuantity || 0}}%</text>
+            </view>
+            <view class="meta-item" wx:if="{{item.lockMac}}">
+              <text class="meta-label">MAC</text>
+              <text class="meta-value">{{item.lockMac}}</text>
+            </view>
+          </view>
+          <view class="tag {{item.keyType === 'owner' ? 'tag-owner' : 'tag-common'}}">
+            {{item.keyType === 'owner' ? '管理员' : '分享'}}
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:else>
+      <view class="empty-icon-wrap">
+        <view class="icon-lock" style="color: var(--primary-light); width: 72rpx; height: 72rpx; border-width: 6rpx;"></view>
+      </view>
+      <view class="empty-text">暂无锁设备</view>
+      <view class="empty-hint">点击右上角 + 添加新锁</view>
+    </view>
+  </view>
+</view>

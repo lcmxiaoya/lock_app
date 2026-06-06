@@ -1,0 +1,54 @@
+<view class="page">
+  <!-- Custom Navigation Bar -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-bar-inner" style="height: {{navBarHeight}}px;">
+      <view class="nav-left" bindtap="onGoBack">
+        <view class="nav-back-arrow"></view>
+      </view>
+      <view class="nav-title">密码详情</view>
+      <view class="nav-right"></view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight}}px;"></view>
+
+  <!-- Detail Content -->
+  <view class="detail-card">
+    <view class="detail-row">
+      <text class="detail-label">密码</text>
+      <text class="detail-value" bindtap="onCopyPwd">{{pwd.keyboardPwd}}</text>
+    </view>
+    <view class="detail-row">
+      <text class="detail-label">姓名</text>
+      <view class="detail-value-wrap" bindtap="onEditName">
+        <text class="detail-value">{{pwd.keyboardPwdName || '未设置'}}</text>
+        <view class="arrow-right"></view>
+      </view>
+    </view>
+    <view class="detail-row detail-row-block">
+      <text class="detail-label">有效期</text>
+      <text class="detail-value">{{validPeriod}}</text>
+    </view>
+  </view>
+
+  <view class="detail-card">
+    <view class="detail-row">
+      <text class="detail-label">发送人</text>
+      <text class="detail-value">{{pwd.senderName || ''}}</text>
+    </view>
+    <view class="detail-row">
+      <text class="detail-label">发送时间</text>
+      <text class="detail-value">{{sendTime}}</text>
+    </view>
+    <view class="detail-row" bindtap="onViewRecords">
+      <text class="detail-label">操作记录</text>
+      <view class="detail-value-wrap">
+        <view class="arrow-right"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Delete Button -->
+  <view class="delete-section">
+    <view class="btn-delete" bindtap="onDelete">删除</view>
+  </view>
+</view>

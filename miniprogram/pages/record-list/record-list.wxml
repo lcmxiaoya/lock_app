@@ -1,0 +1,42 @@
+<view class="container">
+  <view class="record-page" wx:if="{{records.length > 0}}">
+    <block wx:for="{{groupedRecords}}" wx:key="date" wx:for-item="group">
+      <view class="date-header">{{group.date}}</view>
+      <view class="record-list">
+        <view class="record-item" wx:for="{{group.records}}" wx:key="recordId">
+          <!-- APP icon -->
+          <view class="record-icon icon-app" wx:if="{{item.isAppUnlock}}">
+            <view class="icon-person">
+              <view class="person-head"></view>
+              <view class="person-body"></view>
+            </view>
+          </view>
+          <!-- Password/IC/Fingerprint icon -->
+          <view class="record-icon icon-device" wx:else>
+            <view class="icon-grid">
+              <view class="dot"></view><view class="dot"></view><view class="dot"></view>
+              <view class="dot"></view><view class="dot"></view><view class="dot"></view>
+              <view class="dot"></view><view class="dot"></view><view class="dot"></view>
+            </view>
+          </view>
+          <view class="record-info">
+            <view class="record-title">{{item.title}}</view>
+            <view class="record-subtitle">
+              <text>{{item.timeStr}} {{item.description}}</text>
+              <text class="fail-text" wx:if="{{item.isFailed}}"> 失败</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="empty-state" wx:else>
+    <view class="empty-icon">📋</view>
+    <view class="empty-text">暂无记录</view>
+  </view>
+
+  <view class="load-more" wx:if="{{hasMore}}" bindtap="onLoadMore">
+    加载更多
+  </view>
+</view>

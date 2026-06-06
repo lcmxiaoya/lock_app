@@ -1,0 +1,56 @@
+<view class="page">
+  <!-- Custom Navigation Bar -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-bar-inner" style="height: {{navBarHeight}}px;">
+      <view class="nav-left" bindtap="onGoBack">
+        <view class="nav-back-arrow"></view>
+      </view>
+      <view class="nav-title">密码</view>
+      <view class="nav-right" bindtap="onReset">重置</view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight}}px;"></view>
+
+  <!-- Search Bar -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <view class="search-icon"></view>
+      <input class="search-input" placeholder="搜索" placeholder-class="search-placeholder" bindinput="onSearchInput" value="{{searchKey}}" />
+    </view>
+  </view>
+
+  <!-- Password List -->
+  <view class="pwd-list" wx:if="{{passwords.length > 0}}">
+    <view class="pwd-item" wx:for="{{passwords}}" wx:key="pwdId" data-item="{{item}}" bindtap="goDetail">
+      <view class="pwd-icon">
+        <view class="icon-grid">
+          <view class="dot"></view><view class="dot"></view><view class="dot"></view>
+          <view class="dot"></view><view class="dot"></view><view class="dot"></view>
+          <view class="dot"></view><view class="dot"></view><view class="dot"></view>
+        </view>
+      </view>
+      <view class="pwd-info">
+        <view class="pwd-name">{{item.keyboardPwdName || item.keyboardPwd}}</view>
+        <view class="pwd-meta">
+          <text class="pwd-date">{{formatDate(item.startDate || item.createdAt)}}</text>
+          <text class="pwd-type">{{item.pwdTypeName}}</text>
+        </view>
+      </view>
+      <view class="pwd-status" wx:if="{{item._expired}}">已失效</view>
+    </view>
+  </view>
+
+  <!-- Empty State -->
+  <view class="empty-state" wx:else>
+    <view class="empty-icon">🔢</view>
+    <view class="empty-text">暂无密码</view>
+  </view>
+
+  <!-- Bottom Button -->
+  <view class="bottom-bar">
+    <view class="btn-get" bindtap="goGetPassword">
+      <text class="btn-plus">+</text>
+      <text>获取密码</text>
+    </view>
+  </view>
+</view>

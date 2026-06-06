@@ -1,0 +1,113 @@
+<view class="key-page">
+  <view class="page-header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <view class="page-title">电子钥匙</view>
+      <view class="page-desc" wx:if="{{keys.length > 0}}">共 {{keys.length}} 把钥匙</view>
+    </view>
+  </view>
+
+  <view class="content-area">
+    <view class="key-list" wx:if="{{keys.length > 0}}">
+      <view class="key-item" wx:for="{{keys}}" wx:key="id" bindtap="onKeyClick" data-index="{{index}}">
+        <view class="key-avatar">
+          <view class="avatar-icon">👤</view>
+        </view>
+        <view class="key-info">
+          <view class="key-name">{{item.keyName || '钥匙'}}</view>
+          <view class="key-time">
+            <text wx:if="{{item.startDate || item.endDate}}">{{item.startDateStr || '永久'}}<text wx:if="{{item.startDateStr && item.endDateStr}}"> ~ </text>{{item.endDateStr || ''}}</text>
+            <text wx:else>永久有效</text>
+          </view>
+        </view>
+        <view class="key-status {{item.validStatus}}">{{item.validStatus === 'expired' ? '已过期' : '有效'}}</view>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:else>
+      <view class="empty-icon">🔑</view>
+      <view class="empty-text">暂无钥匙</view>
+    </view>
+  </view>
+
+  <!-- 钥匙详情弹窗 -->
+  <view class="modal-mask" wx:if="{{showDetail}}" bindtap="onCloseDetail">
+    <view class="modal-body" catchtap="noop">
+      <view class="modal-title">{{detailKey.keyName || '钥匙详情'}}</view>
+
+      <view class="modal-row">
+        <text class="modal-label">接收账号</text>
+        <text class="modal-value">{{detailKey.receiverUsername}}</text>
+      </view>
+
+      <view class="modal-row">
+        <text class="modal-label">发送人</text>
+        <text class="modal-value">{{detailKey.senderUsername}}</text>
+      </view>
+
+      <view class="modal-row">
+        <text class="modal-label">类型</text>
+        <text class="modal-value">{{detailKey.keyType === 'owner' ? '管理员' : '普通'}}</text>
+      </view>
+
+      <view class="modal-row">
+        <text class="modal-label">状态</text>
+        <text class="modal-value {{detailKey.validStatus}}">{{detailKey.validStatus === 'expired' ? '已过期' : '有效'}}</text>
+      </view>
+
+      <view class="modal-row" wx:if="{{detailKey.startDate && detailKey.startDate !== 0}}">
+        <text class="modal-label">生效时间</text>
+        <text class="modal-value">{{detailKey.startDateStr}}</text>
+      </view>
+
+      <view class="modal-row" wx:if="{{detailKey.endDate && detailKey.endDate !== 0}}">
+        <text class="modal-label">失效时间</text>
+        <text class="modal-value">{{detailKey.endDateStr}}</text>
+      </view>
+
+      <view class="modal-row" wx:if="{{!detailKey.startDate || detailKey.startDate === 0}}">
+        <text class="modal-label">有效期</text>
+        <text class="modal-value">永久</text>
+      </view>
+
+      <view class="modal-row" wx:if="{{detailKey.remarks}}">
+        <text class="modal-label">备注</text>
+        <text class="modal-value">{{detailKey.remarks}}</text>
+      </view>
+
+      <view class="modal-row" wx:if="{{detailKey.createdAtStr}}">
+        <text class="modal-label">创建时间</text>
+        <text class="modal-value">{{detailKey.createdAtStr}}</text>
+      </view>
+
+      <!-- 操作记录 -->
+      <view class="record-section">
+        <view class="record-section-header">
+          <view class="record-section-title">操作记录</view>
+          <view class="record-view-all" wx:if="{{keyRecords.length > 0}}" bindtap="onViewAllRecords">查看全部</view>
+        </view>
+        <view class="record-list" wx:if="{{keyRecords.length > 0}}">
+          <view class="record-item" wx:for="{{keyRecords}}" wx:key="recordId">
+            <text class="record-action {{item.action === 'unlock' ? 'record-unlock' : 'record-lock'}}">
+              {{item.actionName}}
+            </text>
+            <text class="record-time">{{item.recordTimeStr}}</text>
+          </view>
+        </view>
+        <view class="record-empty" wx:elif="{{!recordsLoading}}">暂无操作记录</view>
+        <view class="record-empty" wx:else>加载中...</view>
+      </view>
+
+      <view class="modal-delete-btn" catchtap="onDeleteKey">删除钥匙</view>
+
+      <view class="modal-close" bindtap="onCloseDetail">关闭</view>
+    </view>
+  </view>
+
+  <view class="bottom-btn-wrap">
+    <view class="send-btn" bindtap="goSendKey">
+      <view class="send-btn-icon">+</view>
+      <text>发送钥匙</text>
+    </view>
+  </view>
+</view>

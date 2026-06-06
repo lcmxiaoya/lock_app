@@ -1,0 +1,125 @@
+<view class="page">
+  <!-- Custom Navigation Bar -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-bar-inner" style="height: {{navBarHeight}}px;">
+      <view class="nav-left" bindtap="onGoBack">
+        <view class="nav-back-arrow"></view>
+      </view>
+      <view class="nav-title">获取密码</view>
+      <view class="nav-right"></view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight}}px;"></view>
+
+  <!-- Tab Bar -->
+  <scroll-view class="tab-bar" scroll-x enable-flex>
+    <view class="tab-item {{selectedType === 3 ? 'active' : ''}}" data-type="3" bindtap="onSelectType">限时</view>
+    <view class="tab-item {{selectedType === 1 ? 'active' : ''}}" data-type="1" bindtap="onSelectType">单次</view>
+    <view class="tab-item {{selectedType === 2 ? 'active' : ''}}" data-type="2" bindtap="onSelectType">永久</view>
+    <view class="tab-item {{selectedType === 0 ? 'active' : ''}}" data-type="0" bindtap="onSelectType">自定义</view>
+    <view class="tab-item {{selectedType === 6 ? 'active' : ''}}" data-type="6" bindtap="onSelectType">循环</view>
+  </scroll-view>
+
+  <!-- Time-limited (限时) Form -->
+  <view class="form-card" wx:if="{{selectedType === 3}}">
+    <view class="form-row" bindtap="onPickStartDate">
+      <text class="form-label">生效时间</text>
+      <text class="form-value {{startDateStr ? '' : 'placeholder'}}">{{startDateStr || '请选择'}}</text>
+    </view>
+    <view class="form-row" bindtap="onPickEndDate">
+      <text class="form-label">失效时间</text>
+      <text class="form-value {{endDateStr ? '' : 'placeholder'}}">{{endDateStr || '请选择'}}</text>
+    </view>
+  </view>
+
+  <view class="form-card" wx:if="{{selectedType === 3}}">
+    <view class="form-row">
+      <text class="form-label">姓名</text>
+      <input class="form-input" placeholder="请给密码命名" value="{{pwdName}}" bindinput="onPwdNameInput" maxlength="50" />
+    </view>
+  </view>
+
+  <view class="form-desc" wx:if="{{selectedType === 3}}">
+    <text>限时密码可以在有效期内不限次数使用\n密码在生效后的24小时内至少要使用过一次，否则将失效</text>
+  </view>
+
+  <!-- Single-use (单次) Form -->
+  <view class="form-card" wx:if="{{selectedType === 1}}">
+    <view class="form-row">
+      <text class="form-label">姓名</text>
+      <input class="form-input" placeholder="请给密码命名" value="{{pwdName}}" bindinput="onPwdNameInput" maxlength="50" />
+    </view>
+  </view>
+
+  <view class="form-desc" wx:if="{{selectedType === 1}}">
+    <text>密码有效期为6小时，只能使用一次</text>
+  </view>
+
+  <!-- Permanent (永久) Form -->
+  <view class="form-card" wx:if="{{selectedType === 2}}">
+    <view class="form-row">
+      <text class="form-label">姓名</text>
+      <input class="form-input" placeholder="请给密码命名" value="{{pwdName}}" bindinput="onPwdNameInput" maxlength="50" />
+    </view>
+  </view>
+
+  <view class="form-desc" wx:if="{{selectedType === 2}}">
+    <text>永久密码可长期使用，无有效期限制</text>
+  </view>
+
+  <!-- Custom (自定义) Form -->
+  <view class="form-card" wx:if="{{selectedType === 0}}">
+    <view class="form-row">
+      <text class="form-label">永久</text>
+      <switch class="form-switch" checked="{{isPermanent}}" bindchange="onPermanentChange" color="#2979ff" />
+    </view>
+    <view class="form-row" wx:if="{{!isPermanent}}" bindtap="onPickStartDate">
+      <text class="form-label">生效时间</text>
+      <text class="form-value {{startDateStr ? '' : 'placeholder'}}">{{startDateStr || '请选择'}}</text>
+    </view>
+    <view class="form-row" wx:if="{{!isPermanent}}" bindtap="onPickEndDate">
+      <text class="form-label">失效时间</text>
+      <text class="form-value {{endDateStr ? '' : 'placeholder'}}">{{endDateStr || '请选择'}}</text>
+    </view>
+  </view>
+
+  <view class="form-card" wx:if="{{selectedType === 0}}">
+    <view class="form-row">
+      <text class="form-label">姓名</text>
+      <input class="form-input" placeholder="请给密码命名" value="{{pwdName}}" bindinput="onPwdNameInput" maxlength="50" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">密码</text>
+      <input class="form-input" type="number" placeholder="请输入6-9位数字" value="{{customPwd}}" bindinput="onCustomPwdInput" maxlength="9" />
+    </view>
+  </view>
+
+  <view class="form-desc" wx:if="{{selectedType === 0}}">
+    <text>可在锁旁边通过手机蓝牙添加，也可以通过网络远程添加。</text>
+  </view>
+
+  <!-- Loop (循环) Form -->
+  <view class="form-card" wx:if="{{selectedType === 6}}">
+    <view class="form-row">
+      <text class="form-label">姓名</text>
+      <input class="form-input" placeholder="请给密码命名" value="{{pwdName}}" bindinput="onPwdNameInput" maxlength="50" />
+    </view>
+  </view>
+
+  <view class="form-desc" wx:if="{{selectedType === 6}}">
+    <text>循环密码可每天重复使用，无有效期限制</text>
+  </view>
+
+  <!-- Submit Button -->
+  <view class="btn-wrap">
+    <view class="btn-submit" bindtap="onGenerate">{{selectedType === 0 ? '设置密码' : '获取密码'}}</view>
+  </view>
+
+  <!-- Generated Password Display -->
+  <view class="result-card" wx:if="{{generatedPwd}}">
+    <view class="result-label">生成的密码</view>
+    <view class="result-pwd" bindtap="copyPwd">{{generatedPwd}}</view>
+    <view class="result-type">{{pwdTypeName}}</view>
+    <view class="result-hint">点击密码可复制</view>
+  </view>
+</view>

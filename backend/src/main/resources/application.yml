@@ -1,0 +1,51 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/smart_lock
+    username: postgres
+    password: Lcm&3651705
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+#  data:
+#    redis:
+#      host: localhost
+#      port: 6379
+#      database: 0
+
+# JWT Configuration
+jwt:
+  secret: LockManageSecretKey2026ForJwtTokenGeneration
+  expiration: 604800000  # 7 days in milliseconds
+
+# TTLock Configuration
+ttlock:
+  client-id: 9333a73f92d04e81adc6abcaef81dbba
+  client-secret: 6ba500a63a1da73b76c415231ff5f4fa
+  api-base-url: https://cnapi.ttlock.com
+  env-prefix: "d"  # 环境前缀：dev/test/prod，避免不同环境用户名冲突（只能包含字母和数字）
+
+# SMS Configuration (placeholder, using fixed code 666666)
+sms:
+  code: "666666"
+  expire-seconds: 300
+
+# App Configuration
+app:
+  cors:
+    allowed-origins: "*"
+
+# Jasypt Configuration
+jasypt:
+  encryptor:
+    password: mySecretMasterKey123
+    algorithm: PBEWithMD5AndDES
+    iv-generator-classname: org.jasypt.iv.RandomIvGenerator

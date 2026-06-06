@@ -1,0 +1,203 @@
+.page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* Navigation Bar */
+.nav-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background-color: #fff;
+}
+
+.nav-bar-inner {
+  display: flex;
+  align-items: center;
+  padding: 0 30rpx;
+}
+
+.nav-left {
+  width: 80rpx;
+  display: flex;
+  align-items: center;
+}
+
+.nav-back-arrow {
+  width: 20rpx;
+  height: 20rpx;
+  border-left: 4rpx solid #333;
+  border-bottom: 4rpx solid #333;
+  transform: rotate(45deg);
+}
+
+.nav-title {
+  flex: 1;
+  text-align: center;
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.nav-right {
+  width: 80rpx;
+  text-align: right;
+  font-size: 30rpx;
+  color: #333;
+}
+
+/* Search Bar */
+.search-bar {
+  padding: 16rpx 30rpx;
+  background-color: #fff;
+}
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 32rpx;
+  padding: 16rpx 24rpx;
+}
+
+.search-icon {
+  width: 28rpx;
+  height: 28rpx;
+  border: 3rpx solid #999;
+  border-radius: 50%;
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+}
+
+.search-placeholder {
+  color: #999;
+}
+
+/* Password List */
+.pwd-list {
+  background-color: #fff;
+}
+
+.pwd-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.pwd-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background-color: #2979ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  width: 36rpx;
+  justify-content: space-between;
+}
+
+.dot {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background-color: #fff;
+  margin: 3rpx;
+}
+
+.pwd-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pwd-name {
+  font-size: 32rpx;
+  color: #333;
+  margin-bottom: 8rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pwd-meta {
+  font-size: 26rpx;
+  color: #999;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.pwd-date {
+  color: #999;
+}
+
+.pwd-type {
+  color: #999;
+}
+
+.pwd-status {
+  font-size: 26rpx;
+  color: #f44336;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 200rpx 60rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #999;
+}
+
+/* Bottom Button */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 30rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background-color: #fff;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.btn-get {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96rpx;
+  background-color: #fff;
+  border: 2rpx solid #2979ff;
+  border-radius: 48rpx;
+  color: #2979ff;
+  font-size: 32rpx;
+  font-weight: 500;
+}
+
+.btn-plus {
+  font-size: 36rpx;
+  margin-right: 8rpx;
+}

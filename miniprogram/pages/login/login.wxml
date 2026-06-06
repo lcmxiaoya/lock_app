@@ -1,0 +1,58 @@
+<view class="login-page">
+  <!-- 顶部背景 -->
+  <view class="login-header">
+    <view class="header-bg"></view>
+    <view class="logo-wrap">
+      <view class="logo-icon">
+        <view class="icon-lock" style="color: #fff; width: 64rpx; height: 64rpx; border-width: 6rpx;"></view>
+      </view>
+    </view>
+    <view class="app-title">智能锁</view>
+    <view class="app-subtitle">安全便捷的智能门锁管理</view>
+  </view>
+
+  <!-- 登录表单 -->
+  <view class="login-form">
+    <view class="form-card">
+      <view class="form-group">
+        <view class="input-wrap">
+          <view class="input-icon">
+            <view class="icon-user" style="color: #999; width: 32rpx; height: 32rpx; border-width: 3rpx;"></view>
+          </view>
+          <input 
+            class="form-input" 
+            placeholder="请输入手机号/邮箱" 
+            placeholder-class="input-placeholder"
+            value="{{username}}"
+            bindinput="onUsernameInput"
+          />
+        </view>
+      </view>
+      
+      <view class="form-divider"></view>
+      
+      <view class="form-group">
+        <view class="input-wrap">
+          <view class="input-icon">
+            <view class="icon-lock" style="color: #999; width: 32rpx; height: 32rpx; border-width: 3rpx;"></view>
+          </view>
+          <input 
+            class="form-input" 
+            type="password" 
+            placeholder="请输入密码" 
+            placeholder-class="input-placeholder"
+            value="{{password}}"
+            bindinput="onPasswordInput"
+          />
+        </view>
+      </view>
+    </view>
+
+    <button class="login-btn" bindtap="onLogin">登 录</button>
+    
+    <view class="register-link" bindtap="goRegister">
+      <text class="link-text">还没有账号？</text>
+      <text class="link-action">立即注册</text>
+    </view>
+  </view>
+</view>

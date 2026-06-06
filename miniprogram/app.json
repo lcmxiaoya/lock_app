@@ -1,0 +1,49 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/register/register",
+    "pages/lock-list/lock-list",
+    "pages/lock-control/lock-control",
+    "pages/key-list/key-list",
+    "pages/key-send/key-send",
+    "pages/pwd-list/pwd-list",
+    "pages/pwd-get/pwd-get",
+    "pages/pwd-custom/pwd-custom",
+    "pages/pwd-detail/pwd-detail",
+    "pages/record-list/record-list",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#2979ff",
+    "navigationBarTitleText": "智能锁",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "color": "#999",
+    "selectedColor": "#2979ff",
+    "backgroundColor": "#fff",
+    "list": [
+      {
+        "pagePath": "pages/lock-list/lock-list",
+        "text": "首页",
+        "iconPath": "images/home.png",
+        "selectedIconPath": "images/home-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "images/user.png",
+        "selectedIconPath": "images/user-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "plugins": {
+    "ttlock-plugin": {
+      "version": "3.1.6",
+      "provider": "wx43d5971c94455481"
+    }
+  }
+}

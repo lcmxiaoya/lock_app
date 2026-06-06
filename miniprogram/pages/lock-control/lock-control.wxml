@@ -1,0 +1,125 @@
+<view class="container">
+  <!-- Lock Control -->
+  <view class="control-page" wx:if="{{mode === 'control'}}">
+    <view class="lock-header">
+      <view class="lock-name">{{lockInfo.lockName || '智能锁'}}</view>
+      <view class="lock-battery">
+        <view class="battery-icon">🔋</view>
+        {{lockInfo.electricQuantity || 0}}%
+      </view>
+    </view>
+    
+    <view class="unlock-btn-wrap" bindtap="onUnlock" bindlongpress="onLongPressLock">
+      <view class="unlock-btn">
+        <view class="unlock-btn-icon">🔐</view>
+      </view>
+    </view>
+    <view class="unlock-hint">点击开锁，长按闭锁</view>
+
+    <view class="control-actions">
+      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner'}}" bindtap="goKeyList">
+        <view class="action-icon">🔑</view>
+        <view class="action-text">钥匙管理</view>
+      </view>
+      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner'}}" bindtap="goPwdList">
+        <view class="action-icon">🔢</view>
+        <view class="action-text">密码管理</view>
+      </view>
+      <view class="action-item" bindtap="goRecordList">
+        <view class="action-icon">📋</view>
+        <view class="action-text">开锁记录</view>
+      </view>
+      <view class="action-item action-delete" wx:if="{{lockInfo.keyType === 'owner'}}" bindtap="onDeleteLock">
+        <view class="action-icon">🗑️</view>
+        <view class="action-text">删除锁</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Add Lock Search -->
+  <view class="search-page" wx:if="{{mode === 'search'}}">
+    <!-- 蓝牙未开启提示 -->
+    <view class="search-status" wx:if="{{scanStatus === 'no_bluetooth'}}">
+      <view class="search-animation">
+        <view class="search-circle error"></view>
+        <view class="search-icon">⚠️</view>
+      </view>
+      <view class="search-text">蓝牙未开启</view>
+      <view class="search-hint">请在手机设置中开启蓝牙</view>
+      <button class="btn btn-primary" bindtap="checkBluetoothAndScan">重试</button>
+    </view>
+
+    <!-- 插件加载失败 -->
+    <view class="search-status" wx:elif="{{scanStatus === 'error'}}">
+      <view class="search-animation">
+        <view class="search-circle error"></view>
+        <view class="search-icon">❌</view>
+      </view>
+      <view class="search-text">搜索失败</view>
+      <view class="search-hint">请检查蓝牙和插件配置</view>
+      <button class="btn btn-primary" bindtap="checkBluetoothAndScan">重试</button>
+    </view>
+
+    <!-- 正在搜索 -->
+    <view class="search-status" wx:else>
+      <view class="search-animation">
+        <view class="search-circle"></view>
+        <view class="search-icon">📶</view>
+      </view>
+      <view class="search-text">正在搜索附近的智能锁...</view>
+      <view class="search-hint">请确保蓝牙已开启，锁处于激活状态</view>
+    </view>
+    
+    <view class="device-list">
+      <view class="device-item" wx:for="{{devices}}" wx:key="deviceId" bindtap="onSelectDevice" data-index="{{index}}">
+        <view class="device-icon">🔐</view>
+        <view class="device-info">
+          <view class="device-name">{{item.lockName}}</view>
+          <view class="device-mac">{{item.lockMac}}</view>
+        </view>
+        <view class="device-add-btn">+</view>
+      </view>
+    </view>
+
+    <!-- 未找到设备提示 -->
+    <view class="no-device-tip" wx:if="{{devices.length === 0 && scanStatus === 'scanning'}}">
+      <view class="tip-text">未找到设备？</view>
+      <view class="tip-hint">请确认：</view>
+      <view class="tip-list">
+        <view class="tip-item">1. 锁已通电并处于配对模式</view>
+        <view class="tip-item">2. 手机蓝牙已开启</view>
+        <view class="tip-item">3. 锁在手机附近（1-3米）</view>
+      </view>
+    </view>
+
+    <button class="btn btn-secondary" bindtap="onStopSearch">停止搜索</button>
+  </view>
+
+  <!-- Add Lock Confirm -->
+  <view class="confirm-page" wx:if="{{mode === 'confirm'}}">
+    <view class="confirm-icon">🔐</view>
+    <view class="device-name">{{selectedDevice.lockName}}</view>
+    <view class="device-mac">{{selectedDevice.lockMac}}</view>
+    
+    <view class="form-group">
+      <input class="form-input" placeholder="给锁起个名字（选填）" value="{{lockName}}" bindinput="onLockNameInput" />
+    </view>
+    
+    <button class="btn btn-primary" bindtap="onConfirmAdd">确认添加</button>
+  </view>
+</view>
+
+<!-- 删除确认弹窗 -->
+<view class="modal-mask" wx:if="{{showDeleteModal}}" bindtap="onCancelDelete">
+  <view class="modal-body" catchtap="noop">
+    <view class="modal-title">删除锁</view>
+    <view class="modal-desc">确定要删除此锁吗？此操作不可恢复。</view>
+    <view class="modal-input-wrap">
+      <input class="modal-input" type="text" password placeholder="请输入登录密码确认删除" value="{{deletePassword}}" bindinput="onPasswordInput" />
+    </view>
+    <view class="modal-buttons">
+      <view class="modal-btn modal-btn-cancel" bindtap="onCancelDelete">取消</view>
+      <view class="modal-btn modal-btn-confirm" bindtap="onConfirmDelete">确认删除</view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,51 @@
+<view class="send-page">
+  <view class="tab-bar">
+    <view class="tab-item {{selectedType === 'timed' ? 'active' : ''}}" bindtap="onSelectType" data-type="timed">限时</view>
+    <view class="tab-item {{selectedType === 'single' ? 'active' : ''}}" bindtap="onSelectType" data-type="single">单次</view>
+    <view class="tab-item {{selectedType === 'permanent' ? 'active' : ''}}" bindtap="onSelectType" data-type="permanent">永久</view>
+    <view class="tab-item {{selectedType === 'cyclic' ? 'active' : ''}}" bindtap="onSelectType" data-type="cyclic">循环</view>
+  </view>
+
+  <view class="form-section">
+    <view class="form-row">
+      <view class="form-label">接收者</view>
+      <input class="form-input" placeholder="输入手机号/邮箱" value="{{receiverUsername}}" bindinput="onReceiverInput" />
+      <view class="clear-btn" wx:if="{{receiverUsername}}" bindtap="onClearReceiver">✕</view>
+    </view>
+    <view class="form-row">
+      <view class="form-label">姓名</view>
+      <input class="form-input" placeholder="选填" value="{{keyName}}" bindinput="onKeyNameInput" />
+    </view>
+  </view>
+
+  <view class="form-section" wx:if="{{selectedType === 'timed' || selectedType === 'cyclic'}}">
+    <view class="form-row">
+      <view class="form-label">生效日期</view>
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+        <view class="form-value {{startDate ? '' : 'placeholder'}}">{{startDate || '请选择'}}</view>
+      </picker>
+      <picker mode="time" value="{{startTime}}" bindchange="onStartTimeChange">
+        <view class="form-value time-value">{{startTime}}</view>
+      </picker>
+    </view>
+    <view class="form-row">
+      <view class="form-label">失效日期</view>
+      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+        <view class="form-value {{endDate ? '' : 'placeholder'}}">{{endDate || '请选择'}}</view>
+      </picker>
+      <picker mode="time" value="{{endTime}}" bindchange="onEndTimeChange">
+        <view class="form-value time-value">{{endTime}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="form-section" wx:if="{{selectedType === 'single'}}">
+    <view class="form-hint">接收者在6小时内可使用一次</view>
+  </view>
+
+  <view class="form-section" wx:if="{{selectedType === 'permanent'}}">
+    <view class="form-hint">接收者可永久使用</view>
+  </view>
+
+  <view class="send-action" bindtap="onSendKey">发送</view>
+</view>

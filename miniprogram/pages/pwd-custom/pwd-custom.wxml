@@ -1,0 +1,37 @@
+<view class="container">
+  <view class="form-section">
+    <view class="section-title">密码值（4-9位数字）</view>
+    <input class="form-input" placeholder="请输入密码" maxlength="9" value="{{keyboardPwd}}" bindinput="onPwdInput" type="number" />
+  </view>
+
+  <view class="form-section">
+    <view class="section-title">密码名称（选填）</view>
+    <input class="form-input" placeholder="例如：家人密码" value="{{pwdName}}" bindinput="onPwdNameInput" maxlength="50" />
+  </view>
+
+  <view class="form-section">
+    <view class="section-title">有效期</view>
+    <view class="form-row">
+      <picker mode="date" value="{{startDateStr}}" bindchange="onStartDateChange">
+        <view class="picker-input {{startDateStr ? '' : 'placeholder'}}">
+          {{startDateStr || '请选择开始日期'}}
+        </view>
+      </picker>
+    </view>
+    <view class="form-row mt-20">
+      <picker mode="date" value="{{endDateStr}}" bindchange="onEndDateChange">
+        <view class="picker-input {{endDateStr ? '' : 'placeholder'}}">
+          {{endDateStr || '请选择结束日期'}}
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="notice">
+    <text class="notice-text">添加自定义密码需要靠近门锁并通过蓝牙写入，请确保手机蓝牙已开启。</text>
+  </view>
+
+  <button class="btn btn-primary" disabled="{{adding}}" bindtap="onAddCustom">
+    {{adding ? '添加中...' : '确认添加'}}
+  </button>
+</view>

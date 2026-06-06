@@ -1,0 +1,133 @@
+.container {
+  padding: 0;
+}
+
+.record-page {
+  padding-bottom: 40rpx;
+}
+
+.date-header {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  padding: 24rpx 30rpx;
+  background-color: #f5f5f5;
+}
+
+.record-list {
+  background-color: #fff;
+}
+
+.record-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.record-icon {
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.icon-app {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background-color: #2979ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.person-head {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background-color: #fff;
+  margin-bottom: 4rpx;
+}
+
+.person-body {
+  width: 32rpx;
+  height: 14rpx;
+  border-radius: 16rpx 16rpx 0 0;
+  background-color: #fff;
+}
+
+.icon-device {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background-color: #2979ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  width: 36rpx;
+  justify-content: space-between;
+}
+
+.dot {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background-color: #fff;
+  margin: 3rpx;
+}
+
+.record-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.record-title {
+  font-size: 32rpx;
+  color: #333;
+  margin-bottom: 8rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-subtitle {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.fail-text {
+  color: #f56c6c;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 200rpx 60rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #999;
+}
+
+.load-more {
+  text-align: center;
+  padding: 30rpx;
+  color: #2979ff;
+  font-size: 28rpx;
+}

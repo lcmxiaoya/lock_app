@@ -1,0 +1,97 @@
+<view class="register-page">
+  <!-- 顶部背景 -->
+  <view class="page-header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <view class="page-title">创建账号</view>
+      <view class="page-desc">注册后即可管理您的智能锁</view>
+    </view>
+  </view>
+
+  <!-- 注册表单 -->
+  <view class="register-form">
+    <view class="form-card">
+      <!-- 手机号/邮箱 -->
+      <view class="form-group">
+        <view class="input-wrap">
+          <view class="input-icon">
+            <view class="icon-user" style="color: #999; width: 32rpx; height: 32rpx; border-width: 3rpx;"></view>
+          </view>
+          <input 
+            class="form-input" 
+            placeholder="请输入手机号/邮箱" 
+            placeholder-class="input-placeholder"
+            value="{{username}}"
+            bindinput="onUsernameInput"
+          />
+        </view>
+      </view>
+      
+      <view class="form-divider"></view>
+      
+      <!-- 验证码 -->
+      <view class="form-group">
+        <view class="input-wrap">
+          <view class="input-icon">
+            <view class="icon-key" style="color: #999; width: 32rpx; height: 32rpx; border-width: 3rpx;"></view>
+          </view>
+          <input 
+            class="form-input code-input" 
+            placeholder="请输入验证码" 
+            placeholder-class="input-placeholder"
+            value="{{code}}"
+            bindinput="onCodeInput"
+          />
+          <view class="code-btn {{codeBtnDisabled ? 'disabled' : ''}}" bindtap="onSendCode">
+            <text>{{codeBtnText}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <view class="form-divider"></view>
+      
+      <!-- 密码 -->
+      <view class="form-group">
+        <view class="input-wrap">
+          <view class="input-icon">
+            <view class="icon-lock" style="color: #999; width: 32rpx; height: 32rpx; border-width: 3rpx;"></view>
+          </view>
+          <input 
+            class="form-input" 
+            type="password" 
+            placeholder="请设置密码（6-20位）" 
+            placeholder-class="input-placeholder"
+            value="{{password}}"
+            bindinput="onPasswordInput"
+          />
+        </view>
+      </view>
+      
+      <view class="form-divider"></view>
+      
+      <!-- 确认密码 -->
+      <view class="form-group">
+        <view class="input-wrap">
+          <view class="input-icon">
+            <view class="icon-lock" style="color: #999; width: 32rpx; height: 32rpx; border-width: 3rpx;"></view>
+          </view>
+          <input 
+            class="form-input" 
+            type="password" 
+            placeholder="请再次输入密码" 
+            placeholder-class="input-placeholder"
+            value="{{confirmPassword}}"
+            bindinput="onConfirmPasswordInput"
+          />
+        </view>
+      </view>
+    </view>
+
+    <button class="register-btn" bindtap="onRegister">注 册</button>
+    
+    <view class="login-link" bindtap="goLogin">
+      <text class="link-text">已有账号？</text>
+      <text class="link-action">立即登录</text>
+    </view>
+  </view>
+</view>

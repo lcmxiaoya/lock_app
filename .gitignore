@@ -1,0 +1,15 @@
+target/
+.idea/
+*.class
+*.jar
+*.war
+*.log
+.project
+.classpath
+.settings/
+*.iml
+nohup.out
+node_modules/
+miniprogram/project.private.config.json
+miniprogram/node_modules/
+nul
