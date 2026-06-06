@@ -23,7 +23,7 @@ public class DatabaseInitializer {
 
     private void dropPartialUniqueIndex() {
         try {
-            jdbcTemplate.execute("DROP INDEX IF EXISTS idx_ekey_active_user_lock ON ekey");
+            jdbcTemplate.execute("DROP INDEX idx_ekey_active_user_lock ON ekey");
             log.info("Dropped partial unique index idx_ekey_active_user_lock");
         } catch (Exception e) {
             log.warn("Failed to drop idx_ekey_active_user_lock (may not exist)", e);
@@ -38,10 +38,12 @@ public class DatabaseInitializer {
                 "WHERE e.key_type = 'common' " +
                 "  AND e.status = 'active' " +
                 "  AND e.id NOT IN (" +
-                "    SELECT MAX(e2.id) FROM ekey e2 " +
-                "    WHERE e2.key_type = 'common' " +
-                "      AND e2.status = 'active' " +
-                "    GROUP BY e2.user_id, e2.lock_id" +
+                "    SELECT tmp.id FROM (" +
+                "      SELECT MAX(e2.id) AS id FROM ekey e2 " +
+                "      WHERE e2.key_type = 'common' " +
+                "        AND e2.status = 'active' " +
+                "      GROUP BY e2.user_id, e2.lock_id" +
+                "    ) tmp" +
                 "  )"
             );
             if (cleaned > 0) {
