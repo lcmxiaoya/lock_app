@@ -33,6 +33,13 @@ ttlock:
   api-base-url: ${TTLOCK_API_BASE_URL:https://cnapi.ttlock.com}
   env-prefix: ${TTLOCK_ENV_PREFIX:d}
 
+# WeChat Mini Program Configuration（用于"微信一键登录"）
+# 留空则一键登录入口禁用（WxClient 调用会抛业务异常），账号密码登录不受影响
+wechat:
+  appid: ${WECHAT_APPID:}
+  secret: ${WECHAT_SECRET:}
+  api-base-url: ${WECHAT_API_BASE_URL:https://api.weixin.qq.com}
+
 # SMS Configuration (placeholder, using fixed code 666666)
 sms:
   code: ${SMS_CODE:666666}
@@ -42,6 +49,9 @@ sms:
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+  # 调试敏感信息开关。开启时 GET /api/user/debug/ttlock 会返回当前账号的 TTLock 用户名/密码。
+  # 生产环境必须保持 false（默认）。非生产环境通过环境变量 APP_SHOW_DEBUG_CREDENTIALS=true 打开。
+  show-debug-credentials: ${APP_SHOW_DEBUG_CREDENTIALS:false}
 
 # Jasypt Configuration
 jasypt:

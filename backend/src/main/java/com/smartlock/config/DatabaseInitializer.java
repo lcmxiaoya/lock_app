@@ -19,6 +19,8 @@ public class DatabaseInitializer {
     public void init() {
         dropPartialUniqueIndex();
         cleanupDuplicateKeys();
+        backfillPhoneAndLoginType();
+        backfillEkeyUserType();
     }
 
     private void dropPartialUniqueIndex() {
@@ -61,6 +63,46 @@ public class DatabaseInitializer {
             }
         } catch (Exception e) {
             log.error("Failed to clean up duplicate keys", e);
+        }
+    }
+
+    /**
+     * 历史用户回填 phone / login_type，给微信一键登录的"按 phone 兜底合并"路径准备数据。
+     * 幂等：phone 已有值的不动；login_type 已有值的不动。
+     * MySQL REGEXP，PostgreSQL 不支持；当前主流程是 MySQL（pom.xml）。
+     */
+    private void backfillPhoneAndLoginType() {
+        try {
+            int phoneFilled = jdbcTemplate.update(
+                "UPDATE `user` SET phone = username " +
+                "WHERE phone IS NULL AND username REGEXP '^1[3-9][0-9]{9}$'"
+            );
+            int typeFilled = jdbcTemplate.update(
+                "UPDATE `user` SET login_type = 'password' WHERE login_type IS NULL"
+            );
+            log.info("User backfill: phone={}, loginType={}", phoneFilled, typeFilled);
+        } catch (Exception e) {
+            log.warn("User backfill skipped: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 历史 ekey 回填 user_type（TTLock 官方角色值）。
+     * owner/admin → 110301，common → 110302。幂等。
+     */
+    private void backfillEkeyUserType() {
+        try {
+            int ownerFilled = jdbcTemplate.update(
+                "UPDATE ekey SET user_type = '110301' " +
+                "WHERE user_type IS NULL AND key_type IN ('owner', 'admin')"
+            );
+            int commonFilled = jdbcTemplate.update(
+                "UPDATE ekey SET user_type = '110302' " +
+                "WHERE user_type IS NULL AND key_type = 'common'"
+            );
+            log.info("EKey backfill: admin={}, common={}", ownerFilled, commonFilled);
+        } catch (Exception e) {
+            log.warn("EKey backfill skipped: {}", e.getMessage());
         }
     }
 }

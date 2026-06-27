@@ -32,10 +32,23 @@ public class UserController {
         return ApiResponse.success(response);
     }
 
+    @PostMapping("/wxLogin")
+    public ApiResponse<LoginResponse> wxLogin(@Valid @RequestBody WxLoginRequest request) {
+        LoginResponse response = userService.wxLogin(request);
+        return ApiResponse.success(response);
+    }
+
     @GetMapping("/info")
     public ApiResponse<LoginResponse.UserInfo> getUserInfo(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         LoginResponse.UserInfo userInfo = userService.getUserInfo(userId);
         return ApiResponse.success(userInfo);
+    }
+
+    /** 调试接口：返回当前用户的 TTLock 账号/密码。仅在 app.show-debug-credentials=true 时返回。 */
+    @GetMapping("/debug/ttlock")
+    public ApiResponse<?> getDebugTTLockCredentials(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return ApiResponse.success(userService.getDebugTTLockCredentials(userId));
     }
 }

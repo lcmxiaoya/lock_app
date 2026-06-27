@@ -27,6 +27,20 @@ public class User {
     @Column(length = 500)
     private String avatar;
 
+    // 微信登录相关字段（与现有 username/password 并存，二者覆盖不同登录路径）
+    @Column(length = 64, unique = true)
+    private String openid;
+
+    @Column(length = 64)
+    private String unionid;
+
+    @Column(length = 20)
+    private String phone;
+
+    /** "password"（账号密码注册）| "wechat"（微信一键登录静默注册） */
+    @Column(name = "login_type", length = 20)
+    private String loginType;
+
     // TTLock fields (internal, not exposed to API)
     @Column(name = "tt_username", length = 200)
     private String ttUsername;
