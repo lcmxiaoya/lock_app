@@ -1,0 +1,15 @@
+# 本地开发覆盖配置示例
+#
+# 用法：
+#   1. 把本文件复制为 application-local.yml（同目录，去掉 .example）
+#   2. 填入你的小程序 AppID/AppSecret（也可以覆盖其他敏感配置）
+#   3. 启动时加上 profile：mvn spring-boot:run -Dspring-boot.run.profiles=local
+#      或 IDE 的 Active profiles 设为 local
+#
+# application-local.yml 已加入 .gitignore，不会被提交。
+# 线上（云托管）请通过环境变量 WECHAT_APPID / WECHAT_SECRET 注入，
+# 不要把真实 secret 写进任何被 git 跟踪的文件。
+
+wechat:
+  appid: wxfa8330bdeb61518c
+  secret: REPLACE_WITH_YOUR_WECHAT_SECRET

@@ -13,3 +13,9 @@ node_modules/
 miniprogram/project.private.config.json
 miniprogram/node_modules/
 nul
+
+# 第三方参考资料（通通锁官方 demo + 文档），不进项目仓库
+third_party/
+
+# 本地开发覆盖配置（含微信 AppID/Secret 等敏感信息），不进项目仓库
+backend/src/main/resources/application-local.yml
