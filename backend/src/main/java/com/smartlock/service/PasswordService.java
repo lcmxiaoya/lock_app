@@ -36,6 +36,7 @@ public class PasswordService {
     private final TTLockClient ttLockClient;
     private final UserService userService;
     private final LockService lockService;
+    private final LockPermissionService permission;
 
     private Lock findLockById(Long localLockId) {
         return lockRepository.findById(localLockId)
@@ -43,28 +44,21 @@ public class PasswordService {
     }
 
     private void checkLockAccess(Long userId, Long localLockId) {
-        Lock lock = findLockById(localLockId);
-        boolean isOwner = lock.getUserId().equals(userId);
-        if (!isOwner) {
-            boolean hasKey = eKeyRepository.findByUserIdAndLockId(userId, localLockId)
-                    .stream()
-                    .anyMatch(k -> "active".equals(k.getStatus()));
-            if (!hasKey) {
-                throw new BusinessException(3003, "No permission to access this lock");
-            }
+        if (!permission.canAccess(userId, localLockId)) {
+            throw new BusinessException(3003, "No permission to access this lock");
         }
     }
 
-    private void checkLockOwner(Long userId, Long localLockId) {
-        Lock lock = findLockById(localLockId);
-        if (!lock.getUserId().equals(userId)) {
-            throw new BusinessException(4003, "Only lock owner can perform this operation");
+    /** owner 与 admin 都可管理本锁的密码（生成 / 自定义 / 删除 / 重置 / 修改） */
+    private void requireManage(Long userId, Long localLockId) {
+        if (!permission.canManage(userId, localLockId)) {
+            throw new BusinessException(4003, "Only lock owner or admin can perform this operation");
         }
     }
 
     @Transactional
     public Map<String, Object> generatePassword(Long userId, PasswordGenerateRequest request) {
-        checkLockOwner(userId, request.getLockId());
+        requireManage(userId, request.getLockId());
         User user = userService.getUserById(userId);
         Lock lock = findLockById(request.getLockId());
 
@@ -124,7 +118,7 @@ public class PasswordService {
 
     @Transactional
     public Map<String, Object> addCustomPassword(Long userId, PasswordCustomAddRequest request) {
-        checkLockOwner(userId, request.getLockId());
+        requireManage(userId, request.getLockId());
         Lock lock = findLockById(request.getLockId());
 
         Integer keyboardPwdId = request.getKeyboardPwdId();
@@ -167,7 +161,7 @@ public class PasswordService {
     }
 
     public PageResponse<Map<String, Object>> getPasswordList(Long userId, Long localLockId, int pageNo, int pageSize) {
-        checkLockOwner(userId, localLockId);
+        requireManage(userId, localLockId);
 
         Page<Passcode> page = passcodeRepository.findByLockId(localLockId, PageRequest.of(pageNo - 1, pageSize));
         long now = System.currentTimeMillis();
@@ -202,7 +196,7 @@ public class PasswordService {
 
     @Transactional
     public void deletePassword(Long userId, Long localLockId, Long pwdId) {
-        checkLockOwner(userId, localLockId);
+        requireManage(userId, localLockId);
         Lock lock = findLockById(localLockId);
 
         Passcode passcode = passcodeRepository.findById(pwdId)
@@ -228,7 +222,7 @@ public class PasswordService {
 
     @Transactional
     public void resetPasswords(Long userId, Long localLockId, PasswordResetRequest request) {
-        checkLockOwner(userId, localLockId);
+        requireManage(userId, localLockId);
         User user = userService.getUserById(userId);
         Lock lock = findLockById(localLockId);
 
@@ -250,7 +244,7 @@ public class PasswordService {
     public Map<String, Object> changePassword(Long userId, Long localLockId, Long pwdId,
                                               String newKeyboardPwd, String keyboardPwdName,
                                               Long startDate, Long endDate) {
-        checkLockOwner(userId, localLockId);
+        requireManage(userId, localLockId);
         User user = userService.getUserById(userId);
         Lock lock = findLockById(localLockId);
 

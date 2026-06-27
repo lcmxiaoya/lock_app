@@ -14,6 +14,7 @@ import java.util.Optional;
 @Repository
 public interface LockRepository extends JpaRepository<Lock, Long> {
     Optional<Lock> findByLockId(Long lockId);
+    Optional<Lock> findByLockMac(String lockMac);
     List<Lock> findByUserId(Long userId);
     
     @Query("SELECT l FROM Lock l WHERE l.id IN " +

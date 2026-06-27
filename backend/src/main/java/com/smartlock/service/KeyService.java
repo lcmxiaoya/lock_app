@@ -30,6 +30,7 @@ public class KeyService {
     private final TTLockClient ttLockClient;
     private final UserService userService;
     private final LockService lockService;
+    private final LockPermissionService permission;
 
     /**
      * Send key to another user
@@ -37,10 +38,10 @@ public class KeyService {
     @Transactional
     public Map<String, Object> sendKey(Long userId, KeySendRequest request) {
         User sender = userService.getUserById(userId);
-        
-        // Check if sender has permission: must be the lock owner
+
+        // owner 和 admin 都可向下发普通钥匙
         Lock lock = lockRepository.findById(request.getLockId()).orElse(null);
-        if (lock == null || !lock.getUserId().equals(userId)) {
+        if (lock == null || !permission.canManage(userId, request.getLockId())) {
             throw new BusinessException(3003, "You don't have permission to send keys for this lock");
         }
 
@@ -95,6 +96,7 @@ public class KeyService {
         eKey.setKeyId(keyId);
         eKey.setKeyName(request.getKeyName());
         eKey.setKeyType("common");
+        eKey.setUserType("110302");   // TTLock 官方值：普通钥匙
         eKey.setStartDate(request.getStartDate());
         eKey.setEndDate(request.getEndDate());
         eKey.setRemarks(request.getRemarks());
@@ -103,8 +105,75 @@ public class KeyService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("keyId", keyId);
-        
+
         return response;
+    }
+
+    /**
+     * 授权管理员：先调 sendKey 发普通钥匙拿 keyId，再调 /v3/key/authorize 升级为 admin。
+     * 任一步失败由事务回滚（authorize 失败时主动调 deleteKey 把云端 ekey 也清掉）。
+     * 仅锁拥有者可操作。
+     */
+    @Transactional
+    public Map<String, Object> sendAdminKey(Long userId, KeySendRequest request) {
+        User sender = userService.getUserById(userId);
+        Lock lock = lockRepository.findById(request.getLockId())
+                .orElseThrow(() -> new BusinessException(3001, "锁不存在"));
+
+        // 显式拦截：sendKey 已放宽到 canManage，授权管理员必须额外校验 owner，
+        // 否则 admin 也能调本接口继续向下授权。
+        if (!permission.isOwner(userId, request.getLockId())) {
+            throw new BusinessException(3003, "只有锁拥有者可以授权管理员");
+        }
+
+        // 接收者不能是自己（TTLock 也禁止 admin 给自己发钥匙）
+        String recv = request.getReceiverUsername();
+        if (recv != null
+                && (recv.equals(sender.getUsername())
+                    || (sender.getPhone() != null && recv.equals(sender.getPhone())))) {
+            throw new BusinessException(4002, "不能授权给自己");
+        }
+
+        // Step 1: 复用 sendKey 主流程（同事务内，本地落库 + TTLock send）
+        Map<String, Object> sendResp = sendKey(userId, request);
+        Integer keyId = (Integer) sendResp.get("keyId");
+
+        // Step 2: 升级管理员
+        Map<String, Object> authResp = ttLockClient.authorizeKey(
+                sender.getTtAccessToken(), lock.getLockId().intValue(), keyId);
+        if (authResp.containsKey("errcode") && ((Number) authResp.get("errcode")).intValue() != 0) {
+            // 已下发到云端的 ekey 主动清掉，避免云本地不一致；本地事务自动回滚
+            try {
+                ttLockClient.deleteKey(sender.getTtAccessToken(), keyId);
+            } catch (Exception e) {
+                log.warn("Rollback deleteKey failed after authorize error: {}", e.getMessage());
+            }
+            throw new BusinessException(6002, "授权管理员失败：" + authResp.get("errmsg"));
+        }
+
+        // Step 3: 升级成功后改本地 ekey 标记为 admin
+        EKey eKey = eKeyRepository.findByKeyId(keyId)
+                .orElseThrow(() -> new BusinessException(4001, "钥匙未找到"));
+        eKey.setKeyType("admin");
+        eKey.setUserType("110301");   // TTLock 官方值：管理员钥匙
+        eKeyRepository.save(eKey);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("keyId", keyId);
+        return response;
+    }
+
+    /**
+     * 获取该锁下所有"管理员"钥匙（key_type='admin'），仅锁拥有者可查。
+     */
+    public List<Map<String, Object>> getAdminKeyList(Long userId, Long lockId) {
+        if (!permission.isOwner(userId, lockId)) {
+            throw new BusinessException(3003, "No permission to view admin keys for this lock");
+        }
+        return eKeyRepository.findByLockId(lockId).stream()
+                .filter(eKey -> "admin".equals(eKey.getKeyType()))
+                .map(this::toKeyMap)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -112,17 +181,16 @@ public class KeyService {
      */
     public List<Map<String, Object>> getKeyList(Long userId, Long lockId) {
         if (lockId != null) {
-            Lock lock = lockRepository.findById(lockId).orElse(null);
-            if (lock == null || !lock.getUserId().equals(userId)) {
+            if (!permission.canManage(userId, lockId)) {
                 throw new BusinessException(3003, "No permission to view keys for this lock");
             }
             return eKeyRepository.findByLockId(lockId).stream()
-                    .filter(eKey -> !"owner".equals(eKey.getKeyType()))
+                    .filter(eKey -> isCommonKey(eKey.getKeyType()))
                     .map(this::toKeyMap)
                     .collect(Collectors.toList());
         }
         return eKeyRepository.findByUserId(userId).stream()
-                .filter(eKey -> !"owner".equals(eKey.getKeyType()))
+                .filter(eKey -> isCommonKey(eKey.getKeyType()))
                 .map(this::toKeyMap)
                 .collect(Collectors.toList());
     }
@@ -135,8 +203,7 @@ public class KeyService {
         Page<EKey> page;
 
         if (lockId != null) {
-            Lock lock = lockRepository.findById(lockId).orElse(null);
-            if (lock == null || !lock.getUserId().equals(userId)) {
+            if (!permission.canManage(userId, lockId)) {
                 throw new BusinessException(3003, "No permission to view keys for this lock");
             }
             page = eKeyRepository.findByLockId(lockId, pageRequest);
@@ -145,11 +212,16 @@ public class KeyService {
         }
 
         List<Map<String, Object>> list = page.getContent().stream()
-                .filter(eKey -> !"owner".equals(eKey.getKeyType()))
+                .filter(eKey -> isCommonKey(eKey.getKeyType()))
                 .map(this::toKeyMap)
                 .collect(Collectors.toList());
 
         return PageResponse.of(list, page.getTotalElements(), pageNo, pageSize);
+    }
+
+    /** "钥匙管理"页只展示普通钥匙；owner 和 admin 在"授权管理员"页单独展示。 */
+    private static boolean isCommonKey(String keyType) {
+        return !"owner".equals(keyType) && !"admin".equals(keyType);
     }
 
     private Map<String, Object> toKeyMap(EKey eKey) {
@@ -160,6 +232,7 @@ public class KeyService {
         map.put("lockData", eKey.getLockData());
         map.put("keyName", eKey.getKeyName());
         map.put("keyType", eKey.getKeyType());
+        map.put("userType", eKey.getUserType());
         map.put("startDate", eKey.getStartDate());
         map.put("endDate", eKey.getEndDate());
         map.put("remarks", eKey.getRemarks());
@@ -266,30 +339,38 @@ public class KeyService {
 
     /**
      * Delete key
+     *
+     * <p>三态权限：
+     * <ul>
+     *   <li>钥匙持有者：可删自己的（自我退出）</li>
+     *   <li>锁拥有者：可删任何钥匙</li>
+     *   <li>锁管理员：仅可删 common 钥匙；不能踢掉其他 admin（防止协管互相剔除）</li>
+     * </ul>
      */
     @Transactional
     public void deleteKey(Long userId, Long keyRecordId) {
         EKey eKey = eKeyRepository.findById(keyRecordId)
                 .orElseThrow(() -> new BusinessException(4001, "Key not found"));
 
-        // Check permission: key holder or lock owner can delete
-        boolean isKeyHolder = eKey.getUserId().equals(userId);
-        boolean isLockOwner = false;
-        Lock lock = lockRepository.findById(eKey.getLockId()).orElse(null);
-        if (lock != null && lock.getUserId().equals(userId)) {
-            isLockOwner = true;
-        }
-        if (!isKeyHolder && !isLockOwner) {
+        boolean isHolder = eKey.getUserId().equals(userId);
+        boolean isOwner = permission.isOwner(userId, eKey.getLockId());
+        boolean isManager = permission.canManage(userId, eKey.getLockId());
+        boolean targetIsAdmin = "admin".equals(eKey.getKeyType());
+
+        boolean ok = isHolder
+                  || isOwner
+                  || (isManager && !targetIsAdmin);
+        if (!ok) {
             throw new BusinessException(4003, "No permission to delete this key");
         }
 
         User user = userService.getUserById(userId);
-        
+
         // Call TTLock API
         Map<String, Object> result = ttLockClient.deleteKey(
-                user.getTtAccessToken(), 
+                user.getTtAccessToken(),
                 eKey.getKeyId());
-        
+
         if (result.containsKey("errcode") && ((Number) result.get("errcode")).intValue() != 0) {
             log.warn("TTLock key delete failed: {}", result.get("errmsg"));
             // Continue with local delete even if TTLock fails

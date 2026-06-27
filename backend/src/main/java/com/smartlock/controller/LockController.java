@@ -86,4 +86,16 @@ public class LockController {
         lockService.updateLockData(userId, lockId, lockData);
         return ApiResponse.success(null);
     }
+
+    @PostMapping("/updateName")
+    public ApiResponse<?> updateLockName(
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        Long lockId = ((Number) body.get("lockId")).longValue();
+        String lockName = (String) body.get("lockName");
+        log.info("Update lock name: userId={}, lockId={}, lockName={}", userId, lockId, lockName);
+        lockService.updateLockName(userId, lockId, lockName);
+        return ApiResponse.success(null);
+    }
 }

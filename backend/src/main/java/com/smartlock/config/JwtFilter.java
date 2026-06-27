@@ -20,7 +20,8 @@ public class JwtFilter extends OncePerRequestFilter {
         "/api/health",
         "/api/user/sendCode",
         "/api/user/register",
-        "/api/user/login"
+        "/api/user/login",
+        "/api/user/wxLogin"
     );
 
     private final JwtUtil jwtUtil;

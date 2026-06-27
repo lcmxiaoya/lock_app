@@ -32,6 +32,14 @@ public class EKey {
     @Column(name = "key_type", nullable = false, length = 20)
     private String keyType;
 
+    /**
+     * TTLock 云端的 ekey 角色：110301=admin（拥有者+管理员）, 110302=common。
+     * 与 keyType 共存：keyType 是本地业务抽象（owner/admin/common，区分拥有者），
+     * userType 是 TTLock 云端原生值，便于和云端列表 / 蓝牙错误码对齐。
+     */
+    @Column(name = "user_type", length = 20)
+    private String userType;
+
     @Column(name = "start_date")
     private Long startDate = 0L;
 

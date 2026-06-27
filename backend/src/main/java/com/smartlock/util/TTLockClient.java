@@ -167,12 +167,29 @@ public class TTLockClient {
      */
     public Map<String, Object> updateLockData(String accessToken, int lockId, String lockData) {
         String url = apiBaseUrl + "/v3/lock/updateLockData";
-        
+
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("clientId", clientId);
         params.add("accessToken", accessToken);
         params.add("lockId", String.valueOf(lockId));
         params.add("lockData", lockData);
+        params.add("date", String.valueOf(System.currentTimeMillis()));
+
+        return doPost(url, params);
+    }
+
+    /**
+     * 重命名锁（同步到 TTLock 云端 lockAlias）。
+     * /v3/lock/rename
+     */
+    public Map<String, Object> renameLock(String accessToken, int lockId, String lockAlias) {
+        String url = apiBaseUrl + "/v3/lock/rename";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("clientId", clientId);
+        params.add("accessToken", accessToken);
+        params.add("lockId", String.valueOf(lockId));
+        params.add("lockAlias", lockAlias);
         params.add("date", String.valueOf(System.currentTimeMillis()));
 
         return doPost(url, params);
@@ -213,7 +230,7 @@ public class TTLockClient {
      */
     public Map<String, Object> deleteKey(String accessToken, int keyId) {
         String url = apiBaseUrl + "/v3/key/delete";
-        
+
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("clientId", clientId);
         params.add("accessToken", accessToken);
@@ -221,6 +238,136 @@ public class TTLockClient {
         params.add("date", String.valueOf(System.currentTimeMillis()));
 
         return doPost(url, params);
+    }
+
+    /**
+     * Authorize an existing common ekey to admin (grant admin rights).
+     * 对应 /v3/key/authorize：把已发出的普通钥匙升级为管理员钥匙（userType=110301）。
+     */
+    public Map<String, Object> authorizeKey(String accessToken, int lockId, int keyId) {
+        String url = apiBaseUrl + "/v3/key/authorize";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("clientId", clientId);
+        params.add("accessToken", accessToken);
+        params.add("lockId", String.valueOf(lockId));
+        params.add("keyId", String.valueOf(keyId));
+        params.add("date", String.valueOf(System.currentTimeMillis()));
+
+        return doPost(url, params);
+    }
+
+    // =================== IC 卡 ===================
+
+    /**
+     * 添加 IC 卡（云端）。蓝牙端 addICCard 拿到 cardNumber 后调用此接口。
+     * /v3/identityCard/addForReversedCardNumber
+     */
+    public Map<String, Object> addICCard(String accessToken, int lockId, String cardNumber,
+                                         String cardName, Long startDate, Long endDate) {
+        String url = apiBaseUrl + "/v3/identityCard/addForReversedCardNumber";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("clientId", clientId);
+        params.add("accessToken", accessToken);
+        params.add("lockId", String.valueOf(lockId));
+        params.add("cardNumber", cardNumber);
+        if (cardName != null) params.add("cardName", cardName);
+        if (startDate != null) params.add("startDate", String.valueOf(startDate));
+        if (endDate != null) params.add("endDate", String.valueOf(endDate));
+        params.add("addType", "1");
+        params.add("date", String.valueOf(System.currentTimeMillis()));
+
+        return doPost(url, params);
+    }
+
+    /** /v3/identityCard/delete */
+    public Map<String, Object> deleteICCard(String accessToken, int lockId, int cardId) {
+        String url = apiBaseUrl + "/v3/identityCard/delete";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("clientId", clientId);
+        params.add("accessToken", accessToken);
+        params.add("lockId", String.valueOf(lockId));
+        params.add("cardId", String.valueOf(cardId));
+        params.add("deleteType", "1");
+        params.add("date", String.valueOf(System.currentTimeMillis()));
+
+        return doPost(url, params);
+    }
+
+    /** /v3/identityCard/list */
+    public Map<String, Object> getICCardList(String accessToken, int lockId, int pageNo, int pageSize) {
+        String url = apiBaseUrl + "/v3/identityCard/list";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("clientId", clientId);
+        params.add("accessToken", accessToken);
+        params.add("lockId", String.valueOf(lockId));
+        params.add("pageNo", String.valueOf(pageNo));
+        params.add("pageSize", String.valueOf(pageSize));
+        params.add("date", String.valueOf(System.currentTimeMillis()));
+
+        return doGet(url, params);
+    }
+
+    // =================== 指纹 ===================
+
+    /**
+     * /v3/fingerprint/add
+     * @param fingerprintType 1=normal, 4=cyclic
+     * @param cyclicConfigJson 周期型 JSON 数组字符串；非周期型传 null
+     */
+    public Map<String, Object> addFingerprint(String accessToken, int lockId, String fingerprintNumber,
+                                              int fingerprintType, String fingerprintName,
+                                              Long startDate, Long endDate, String cyclicConfigJson) {
+        String url = apiBaseUrl + "/v3/fingerprint/add";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("clientId", clientId);
+        params.add("accessToken", accessToken);
+        params.add("lockId", String.valueOf(lockId));
+        params.add("fingerprintNumber", fingerprintNumber);
+        params.add("fingerprintType", String.valueOf(fingerprintType));
+        if (fingerprintName != null) params.add("fingerprintName", fingerprintName);
+        if (startDate != null) params.add("startDate", String.valueOf(startDate));
+        if (endDate != null) params.add("endDate", String.valueOf(endDate));
+        if (cyclicConfigJson != null && fingerprintType == 4) {
+            params.add("cyclicConfig", cyclicConfigJson);
+        }
+        params.add("date", String.valueOf(System.currentTimeMillis()));
+
+        return doPost(url, params);
+    }
+
+    /** /v3/fingerprint/delete */
+    public Map<String, Object> deleteFingerprint(String accessToken, int lockId, int fingerprintId) {
+        String url = apiBaseUrl + "/v3/fingerprint/delete";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("clientId", clientId);
+        params.add("accessToken", accessToken);
+        params.add("lockId", String.valueOf(lockId));
+        params.add("fingerprintId", String.valueOf(fingerprintId));
+        params.add("deleteType", "1");
+        params.add("date", String.valueOf(System.currentTimeMillis()));
+
+        return doPost(url, params);
+    }
+
+    /** /v3/fingerprint/list */
+    public Map<String, Object> getFingerprintList(String accessToken, int lockId, int pageNo, int pageSize) {
+        String url = apiBaseUrl + "/v3/fingerprint/list";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("clientId", clientId);
+        params.add("accessToken", accessToken);
+        params.add("lockId", String.valueOf(lockId));
+        params.add("pageNo", String.valueOf(pageNo));
+        params.add("pageSize", String.valueOf(pageSize));
+        params.add("date", String.valueOf(System.currentTimeMillis()));
+
+        return doGet(url, params);
     }
 
     /**

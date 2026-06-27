@@ -49,6 +49,26 @@ public class KeyController {
         return ApiResponse.success(result);
     }
 
+    /** 授权管理员：等价于"先 send 再 authorize"两步组合，由后端在同一事务内完成 */
+    @PostMapping("/sendAdmin")
+    public ApiResponse<Map<String, Object>> sendAdminKey(
+            @Valid @RequestBody KeySendRequest request,
+            HttpServletRequest requestAttr) {
+        Long userId = (Long) requestAttr.getAttribute("userId");
+        Map<String, Object> result = keyService.sendAdminKey(userId, request);
+        return ApiResponse.success(result);
+    }
+
+    /** 获取该锁所有"管理员"钥匙；仅锁拥有者可查 */
+    @GetMapping("/adminList")
+    public ApiResponse<List<Map<String, Object>>> getAdminKeyList(
+            @RequestParam Long lockId,
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        List<Map<String, Object>> result = keyService.getAdminKeyList(userId, lockId);
+        return ApiResponse.success(result);
+    }
+
     @PostMapping("/delete")
     public ApiResponse<?> deleteKey(
             @RequestBody Map<String, Long> body,

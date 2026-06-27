@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS ekey (
     lock_data TEXT,
     key_name VARCHAR(100),
     key_type VARCHAR(20) NOT NULL,
+    user_type VARCHAR(20),
     start_date BIGINT DEFAULT 0,
     end_date BIGINT DEFAULT 0,
     remarks VARCHAR(500),
