@@ -17,21 +17,33 @@
     <view class="unlock-hint">点击开锁，长按闭锁</view>
 
     <view class="control-actions">
-      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner'}}" bindtap="goKeyList">
+      <view class="action-item" wx:if="{{lockInfo.keyType !== 'common'}}" bindtap="goKeyList">
         <view class="action-icon">🔑</view>
         <view class="action-text">钥匙管理</view>
       </view>
-      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner'}}" bindtap="goPwdList">
+      <view class="action-item" wx:if="{{lockInfo.keyType !== 'common'}}" bindtap="goPwdList">
         <view class="action-icon">🔢</view>
         <view class="action-text">密码管理</view>
+      </view>
+      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner'}}" bindtap="goICCardList">
+        <view class="action-icon">💳</view>
+        <view class="action-text">IC 卡管理</view>
+      </view>
+      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner'}}" bindtap="goFingerprintList">
+        <view class="action-icon">👆</view>
+        <view class="action-text">指纹管理</view>
       </view>
       <view class="action-item" bindtap="goRecordList">
         <view class="action-icon">📋</view>
         <view class="action-text">开锁记录</view>
       </view>
-      <view class="action-item action-delete" wx:if="{{lockInfo.keyType === 'owner'}}" bindtap="onDeleteLock">
-        <view class="action-icon">🗑️</view>
-        <view class="action-text">删除锁</view>
+      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner'}}" bindtap="goAdminList">
+        <view class="action-icon">👨‍💼</view>
+        <view class="action-text">授权管理员</view>
+      </view>
+      <view class="action-item" wx:if="{{lockInfo.keyType !== 'common'}}" bindtap="goSettings">
+        <view class="action-icon">⚙️</view>
+        <view class="action-text">设置</view>
       </view>
     </view>
   </view>
@@ -71,13 +83,22 @@
     </view>
     
     <view class="device-list">
-      <view class="device-item" wx:for="{{devices}}" wx:key="deviceId" bindtap="onSelectDevice" data-index="{{index}}">
+      <view
+        class="device-item {{item.isSettingMode ? '' : 'device-item-disabled'}}"
+        wx:for="{{devices}}"
+        wx:key="deviceId"
+        bindtap="onSelectDevice"
+        data-index="{{index}}">
         <view class="device-icon">🔐</view>
         <view class="device-info">
           <view class="device-name">{{item.lockName}}</view>
-          <view class="device-mac">{{item.lockMac}}</view>
+          <view class="device-meta">
+            <text class="device-mac">{{item.lockMac}}</text>
+            <text class="device-battery" wx:if="{{item.electricQuantity > 0}}">· 电量 {{item.electricQuantity}}%</text>
+          </view>
         </view>
-        <view class="device-add-btn">+</view>
+        <view class="device-add-btn" wx:if="{{item.isSettingMode}}">+</view>
+        <view class="device-tag-disabled" wx:else>已被添加</view>
       </view>
     </view>
 
@@ -106,20 +127,5 @@
     </view>
     
     <button class="btn btn-primary" bindtap="onConfirmAdd">确认添加</button>
-  </view>
-</view>
-
-<!-- 删除确认弹窗 -->
-<view class="modal-mask" wx:if="{{showDeleteModal}}" bindtap="onCancelDelete">
-  <view class="modal-body" catchtap="noop">
-    <view class="modal-title">删除锁</view>
-    <view class="modal-desc">确定要删除此锁吗？此操作不可恢复。</view>
-    <view class="modal-input-wrap">
-      <input class="modal-input" type="text" password placeholder="请输入登录密码确认删除" value="{{deletePassword}}" bindinput="onPasswordInput" />
-    </view>
-    <view class="modal-buttons">
-      <view class="modal-btn modal-btn-cancel" bindtap="onCancelDelete">取消</view>
-      <view class="modal-btn modal-btn-confirm" bindtap="onConfirmDelete">确认删除</view>
-    </view>
   </view>
 </view>

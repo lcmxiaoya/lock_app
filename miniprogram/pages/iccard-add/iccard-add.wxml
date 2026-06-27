@@ -1,0 +1,52 @@
+<view class="page">
+  <view class="tab-bar">
+    <view class="tab {{selectedType === 'timed' ? 'active' : ''}}"
+          bindtap="onSelectType" data-type="timed">限时</view>
+    <view class="tab {{selectedType === 'permanent' ? 'active' : ''}} {{permanentDisabled ? 'tab-disabled' : ''}}"
+          bindtap="onSelectType" data-type="permanent">永久</view>
+  </view>
+
+  <view class="validity-hint" wx:if="{{validityHint}}">⓵ {{validityHint}}</view>
+
+  <view class="form-card">
+    <view class="row">
+      <view class="label">名称</view>
+      <input class="input" placeholder="选填，如「王阿姨的卡」"
+             value="{{cardName}}" bindinput="onCardNameInput" />
+    </view>
+  </view>
+
+  <view class="form-card" wx:if="{{selectedType === 'timed'}}">
+    <view class="row">
+      <view class="label">生效时间</view>
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+        <view class="value {{startDate ? '' : 'placeholder'}}">{{startDate || '请选择'}}</view>
+      </picker>
+      <picker mode="time" value="{{startTime}}" bindchange="onStartTimeChange">
+        <view class="value time">{{startTime}}</view>
+      </picker>
+    </view>
+    <view class="row">
+      <view class="label">失效时间</view>
+      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+        <view class="value {{endDate ? '' : 'placeholder'}}">{{endDate || '请选择'}}</view>
+      </picker>
+      <picker mode="time" value="{{endTime}}" bindchange="onEndTimeChange">
+        <view class="value time">{{endTime}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="warning">
+    添加 IC 卡需要您在锁边靠近刷一次卡
+  </view>
+
+  <view class="step" wx:if="{{stepText}}">
+    <view class="step-icon">💳</view>
+    <view class="step-text">{{stepText}}</view>
+  </view>
+
+  <view class="action {{adding ? 'action-disabled' : ''}}" bindtap="onAdd">
+    {{adding ? '添加中...' : '开始添加'}}
+  </view>
+</view>

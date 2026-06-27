@@ -43,8 +43,8 @@
               <text class="meta-value">{{item.lockMac}}</text>
             </view>
           </view>
-          <view class="tag {{item.keyType === 'owner' ? 'tag-owner' : 'tag-common'}}">
-            {{item.keyType === 'owner' ? '管理员' : '分享'}}
+          <view class="tag {{item.keyType === 'common' ? 'tag-common' : 'tag-owner'}}">
+            {{item.keyType === 'common' ? '分享' : '管理员'}}
           </view>
         </view>
       </view>

@@ -105,3 +105,37 @@ CREATE TABLE IF NOT EXISTS record (
 
 CREATE INDEX idx_record_user_id ON record(user_id);
 CREATE INDEX idx_record_lock_id ON record(lock_id);
+
+-- IC Card table
+CREATE TABLE IF NOT EXISTS ic_card (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    lock_id BIGINT NOT NULL,
+    card_id INT NOT NULL UNIQUE,
+    card_number VARCHAR(50) NOT NULL,
+    card_name VARCHAR(100),
+    start_date BIGINT DEFAULT 0,
+    end_date BIGINT DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'active',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_ic_card_lock_id ON ic_card(lock_id);
+
+-- Fingerprint table
+CREATE TABLE IF NOT EXISTS fingerprint (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    lock_id BIGINT NOT NULL,
+    fingerprint_id INT NOT NULL UNIQUE,
+    fingerprint_number VARCHAR(50) NOT NULL,
+    fingerprint_name VARCHAR(100),
+    fingerprint_type INT NOT NULL DEFAULT 1,
+    cyclic_config VARCHAR(500),
+    start_date BIGINT DEFAULT 0,
+    end_date BIGINT DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'active',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_fp_lock_id ON fingerprint(lock_id);

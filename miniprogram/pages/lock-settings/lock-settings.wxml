@@ -1,0 +1,124 @@
+<view class="container">
+  <!-- 锁名头部 -->
+  <view class="settings-header">
+    <view class="header-icon">🔐</view>
+    <view class="header-name">{{lockName || '智能锁'}}</view>
+  </view>
+
+  <!-- 基本信息 -->
+  <view class="section">
+    <view class="section-title">基本信息</view>
+    <view class="info-card">
+      <view class="info-row">
+        <text class="info-label">锁编号</text>
+        <text class="info-value">{{lockAlias || lockName || '-'}}</text>
+      </view>
+      <view class="info-divider"></view>
+      <view class="info-row">
+        <text class="info-label">MAC/ID</text>
+        <text class="info-value info-value-mono">{{macIdText}}</text>
+      </view>
+      <view class="info-divider"></view>
+      <view class="info-row" bindtap="onRefreshBattery">
+        <text class="info-label">电量</text>
+        <view class="info-value-wrap">
+          <text class="info-value {{electricQuantity <= 20 ? 'info-value-warn' : ''}}">{{electricQuantity || 0}}%</text>
+          <text class="info-arrow">{{refreshingBattery ? '⟳' : '›'}}</text>
+        </view>
+      </view>
+      <view class="info-divider"></view>
+      <view class="info-row">
+        <text class="info-label">有效期</text>
+        <text class="info-value">{{validityText}}</text>
+      </view>
+      <view class="info-divider"></view>
+      <view class="info-row" bindtap="onEditName">
+        <text class="info-label">名称</text>
+        <view class="info-value-wrap">
+          <text class="info-value">{{lockName || '-'}}</text>
+          <text class="info-arrow">›</text>
+        </view>
+      </view>
+      <view class="info-divider"></view>
+      <view class="info-row">
+        <text class="info-label">锁分组</text>
+        <view class="info-value-wrap">
+          <text class="info-value">{{groupText}}</text>
+          <text class="info-arrow">›</text>
+        </view>
+      </view>
+      <view class="info-divider"></view>
+      <view class="info-row">
+        <text class="info-label">微信二维码</text>
+        <view class="info-value-wrap">
+          <text class="info-value info-value-muted">扫码分享</text>
+          <text class="info-arrow">›</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 数据同步 -->
+  <view class="section">
+    <view class="section-title">数据同步</view>
+    <view class="info-card">
+      <view class="action-row" bindtap="onUploadRecords">
+        <view class="action-row-left">
+          <view class="action-row-icon">📤</view>
+          <view class="action-row-text">
+            <view class="action-row-title">同步操作记录</view>
+            <view class="action-row-desc">读取锁端 IC 卡/密码/指纹等操作记录并上传到服务器</view>
+          </view>
+        </view>
+        <text class="info-arrow">{{uploading ? '⟳' : '›'}}</text>
+      </view>
+    </view>
+    <view class="section-hint" wx:if="{{lastSyncText}}">上次同步：{{lastSyncText}}</view>
+  </view>
+
+  <!-- 危险操作：拥有者 = 删除锁，管理员 = 退出管理 -->
+  <view class="section" wx:if="{{keyType === 'owner' || keyType === 'admin'}}">
+    <view class="section-title danger-title">危险操作</view>
+    <view class="info-card danger-card">
+      <view class="action-row" wx:if="{{keyType === 'owner'}}" bindtap="onDeleteLock">
+        <view class="action-row-left">
+          <view class="action-row-icon danger-icon">🗑️</view>
+          <view class="action-row-text">
+            <view class="action-row-title danger-text">删除这把锁</view>
+            <view class="action-row-desc">从您的账户和云端移除该锁，需要在锁边操作，删除后不可恢复</view>
+          </view>
+        </view>
+        <text class="info-arrow">›</text>
+      </view>
+      <view class="action-row" wx:if="{{keyType === 'admin'}}" bindtap="onQuitAdmin">
+        <view class="action-row-left">
+          <view class="action-row-icon danger-icon">🚪</view>
+          <view class="action-row-text">
+            <view class="action-row-title danger-text">退出管理</view>
+            <view class="action-row-desc">删除您作为管理员的这把锁的管理员钥匙，删除后您将无法开锁</view>
+          </view>
+        </view>
+        <text class="info-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 留白 -->
+  <view class="bottom-spacer"></view>
+</view>
+<view class="modal-mask" wx:if="{{showNameModal}}" bindtap="onCancelName">
+  <view class="modal-body" catchtap="noop">
+    <view class="modal-title">修改锁名称</view>
+    <view class="modal-desc">新名称会同步到 TTLock 云端</view>
+    <view class="modal-input-wrap">
+      <input class="modal-input" type="text" maxlength="100"
+             placeholder="请输入新名称" value="{{editingName}}"
+             focus="{{showNameModal}}"
+             bindinput="onNameInput" />
+    </view>
+    <view class="modal-buttons">
+      <view class="modal-btn modal-btn-cancel" bindtap="onCancelName">取消</view>
+      <view class="modal-btn modal-btn-confirm" bindtap="onConfirmName">保存</view>
+    </view>
+  </view>
+</view>

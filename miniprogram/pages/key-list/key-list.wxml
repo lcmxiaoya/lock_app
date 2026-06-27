@@ -47,7 +47,7 @@
 
       <view class="modal-row">
         <text class="modal-label">类型</text>
-        <text class="modal-value">{{detailKey.keyType === 'owner' ? '管理员' : '普通'}}</text>
+        <text class="modal-value">{{detailKey.keyType === 'owner' ? '拥有者' : (detailKey.keyType === 'admin' ? '管理员' : '普通')}}</text>
       </view>
 
       <view class="modal-row">

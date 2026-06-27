@@ -1,0 +1,49 @@
+<view class="send-page">
+  <view class="tab-bar">
+    <view class="tab-item {{selectedType === 'timed' ? 'active' : ''}}"
+          bindtap="onSelectType" data-type="timed">限时</view>
+    <view class="tab-item {{selectedType === 'permanent' ? 'active' : ''}}"
+          bindtap="onSelectType" data-type="permanent">永久</view>
+  </view>
+
+  <view class="form-section">
+    <view class="form-row">
+      <view class="form-label">接收者</view>
+      <input class="form-input" placeholder="请输入手机号或email"
+             value="{{receiverUsername}}" bindinput="onReceiverInput" />
+      <view class="clear-btn" wx:if="{{receiverUsername}}" bindtap="onClearReceiver">✕</view>
+    </view>
+    <view class="form-row">
+      <view class="form-label">姓名</view>
+      <input class="form-input" placeholder="请输入"
+             value="{{keyName}}" bindinput="onKeyNameInput" />
+    </view>
+  </view>
+
+  <view class="form-section" wx:if="{{selectedType === 'timed'}}">
+    <view class="form-row">
+      <view class="form-label">生效时间</view>
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+        <view class="form-value {{startDate ? '' : 'placeholder'}}">{{startDate || '请选择'}}</view>
+      </picker>
+      <picker mode="time" value="{{startTime}}" bindchange="onStartTimeChange">
+        <view class="form-value time-value">{{startTime}}</view>
+      </picker>
+    </view>
+    <view class="form-row">
+      <view class="form-label">失效时间</view>
+      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+        <view class="form-value {{endDate ? '' : 'placeholder'}}">{{endDate || '请选择'}}</view>
+      </picker>
+      <picker mode="time" value="{{endTime}}" bindchange="onEndTimeChange">
+        <view class="form-value time-value">{{endTime}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="warning-text">
+    授权管理员拥有操作这把锁的重要权限，请确保只发给你信任的人
+  </view>
+
+  <view class="send-action" bindtap="onSend">发送</view>
+</view>

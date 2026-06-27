@@ -1,0 +1,81 @@
+<view class="page">
+  <view class="tab-bar">
+    <view class="tab {{selectedType === 'timed' ? 'active' : ''}}"
+          bindtap="onSelectType" data-type="timed">限时</view>
+    <view class="tab {{selectedType === 'permanent' ? 'active' : ''}} {{permanentDisabled ? 'tab-disabled' : ''}}"
+          bindtap="onSelectType" data-type="permanent">永久</view>
+    <view class="tab {{selectedType === 'cyclic' ? 'active' : ''}}"
+          bindtap="onSelectType" data-type="cyclic">周期</view>
+  </view>
+
+  <view class="validity-hint" wx:if="{{validityHint}}">⓵ {{validityHint}}</view>
+
+  <view class="form-card">
+    <view class="row">
+      <view class="label">名称</view>
+      <input class="input" placeholder="选填，如「王阿姨的指纹」"
+             value="{{fingerName}}" bindinput="onFingerNameInput" />
+    </view>
+  </view>
+
+  <view class="form-card" wx:if="{{selectedType === 'timed'}}">
+    <view class="row">
+      <view class="label">生效时间</view>
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+        <view class="value {{startDate ? '' : 'placeholder'}}">{{startDate || '请选择'}}</view>
+      </picker>
+      <picker mode="time" value="{{startTime}}" bindchange="onStartTimeChange">
+        <view class="value time">{{startTime}}</view>
+      </picker>
+    </view>
+    <view class="row">
+      <view class="label">失效时间</view>
+      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+        <view class="value {{endDate ? '' : 'placeholder'}}">{{endDate || '请选择'}}</view>
+      </picker>
+      <picker mode="time" value="{{endTime}}" bindchange="onEndTimeChange">
+        <view class="value time">{{endTime}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="form-card" wx:if="{{selectedType === 'cyclic'}}">
+    <view class="row row-wrap">
+      <view class="label">星期</view>
+      <view class="day-list">
+        <view wx:for="{{weekDays}}"
+              wx:key="value"
+              class="day {{cyclicDays.indexOf(item.value) >= 0 ? 'day-on' : ''}}"
+              bindtap="onDayToggle"
+              data-day="{{item.value}}">周{{item.label}}</view>
+      </view>
+    </view>
+    <view class="row">
+      <view class="label">起始时间</view>
+      <picker mode="time" value="{{cyclicStartTime}}" bindchange="onCyclicStartTimeChange">
+        <view class="value time">{{cyclicStartTime}}</view>
+      </picker>
+    </view>
+    <view class="row">
+      <view class="label">结束时间</view>
+      <picker mode="time" value="{{cyclicEndTime}}" bindchange="onCyclicEndTimeChange">
+        <view class="value time">{{cyclicEndTime}}</view>
+      </picker>
+    </view>
+    <view class="form-hint">该指纹仅在选中的工作日 / 时段可使用</view>
+  </view>
+
+  <view class="warning">
+    添加指纹需要在锁上按三次（不同位置）
+  </view>
+
+  <view class="step" wx:if="{{stepText}}">
+    <view class="step-icon">👆</view>
+    <view class="step-text">{{stepText}}</view>
+    <view class="step-progress" wx:if="{{progress}}">{{progress}}</view>
+  </view>
+
+  <view class="action {{adding ? 'action-disabled' : ''}}" bindtap="onAdd">
+    {{adding ? '录入中...' : '开始录入'}}
+  </view>
+</view>

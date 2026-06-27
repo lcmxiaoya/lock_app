@@ -55,9 +55,18 @@ function handleResponse(res, resolve, reject) {
       reject(data);
     }
   } else if (res.statusCode === 401) {
-    app.clearLoginInfo();
-    wx.redirectTo({ url: '/pages/login/login' });
-    reject({ code: 1002, message: 'Token expired' });
+    // 401 分两种：登录态失效（带 token 的请求） vs 接口未在白名单（无 token 请求）。
+    // 后者不应清登录态/跳登录页，否则会把"后端未部署"等服务端问题伪装成登录过期。
+    const hadToken = !!app.globalData.token;
+    if (hadToken) {
+      app.clearLoginInfo();
+      wx.redirectTo({ url: '/pages/login/login' });
+      reject({ code: 1002, message: '登录已过期，请重新登录' });
+    } else {
+      const msg = (res.data && res.data.message) || '接口未授权（401），请联系管理员';
+      wx.showToast({ title: msg, icon: 'none' });
+      reject({ code: 401, message: msg });
+    }
   } else {
     wx.showToast({ title: 'Network error', icon: 'none' });
     reject({ code: res.statusCode, message: 'Network error' });
@@ -95,7 +104,15 @@ const userApi = {
       data
     });
   },
-  
+
+  wxLogin(data) {
+    return request({
+      url: '/api/user/wxLogin',
+      method: 'POST',
+      data
+    });
+  },
+
   getInfo() {
     return request({
       url: '/api/user/info'
@@ -143,6 +160,14 @@ const lockApi = {
     });
   },
 
+  updateName(lockId, lockName) {
+    return request({
+      url: '/api/lock/updateName',
+      method: 'POST',
+      data: { lockId, lockName }
+    });
+  },
+
   getUnlockData(lockId) {
     return request({
       url: `/api/lock/unlockData?lockId=${lockId}`
@@ -172,6 +197,22 @@ const keyApi = {
       url: '/api/key/send',
       method: 'POST',
       data
+    });
+  },
+
+  /** 授权管理员：等价于"先 send 再 authorize"，由后端组合 */
+  sendAdmin(data) {
+    return request({
+      url: '/api/key/sendAdmin',
+      method: 'POST',
+      data
+    });
+  },
+
+  /** 获取该锁所有"管理员"钥匙；仅锁拥有者可查 */
+  getAdminList(lockId) {
+    return request({
+      url: `/api/key/adminList?lockId=${lockId}`
     });
   },
   
@@ -273,11 +314,53 @@ const recordApi = {
   }
 };
 
+/**
+ * IC Card API（仅锁拥有者可操作）
+ */
+const icCardApi = {
+  getList(lockId, pageNo = 1, pageSize = 20) {
+    return request({
+      url: `/api/icCard/list?lockId=${lockId}&pageNo=${pageNo}&pageSize=${pageSize}`
+    });
+  },
+  add(data) {
+    return request({ url: '/api/icCard/add', method: 'POST', data });
+  },
+  delete(recordId) {
+    return request({ url: '/api/icCard/delete', method: 'POST', data: { recordId } });
+  },
+  modifyValidity(data) {
+    return request({ url: '/api/icCard/modifyValidity', method: 'POST', data });
+  }
+};
+
+/**
+ * Fingerprint API（仅锁拥有者可操作）
+ */
+const fingerprintApi = {
+  getList(lockId, pageNo = 1, pageSize = 20) {
+    return request({
+      url: `/api/fingerprint/list?lockId=${lockId}&pageNo=${pageNo}&pageSize=${pageSize}`
+    });
+  },
+  add(data) {
+    return request({ url: '/api/fingerprint/add', method: 'POST', data });
+  },
+  delete(recordId) {
+    return request({ url: '/api/fingerprint/delete', method: 'POST', data: { recordId } });
+  },
+  modifyValidity(data) {
+    return request({ url: '/api/fingerprint/modifyValidity', method: 'POST', data });
+  }
+};
+
 module.exports = {
   request,
   userApi,
   lockApi,
   keyApi,
   pwdApi,
-  recordApi
+  recordApi,
+  icCardApi,
+  fingerprintApi
 };

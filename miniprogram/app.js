@@ -6,7 +6,7 @@ App({
   },
 
   // true = 微信云托管线上，false = 本地开发
-  useCloud: true,
+  useCloud: false,
   cloudHosting: {
     env: 'prod-d7gkt6iuhf270390a',
     service: 'ttlock-server'

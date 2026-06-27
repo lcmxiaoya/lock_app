@@ -1,0 +1,29 @@
+<view class="admin-page">
+  <view class="admin-list" wx:if="{{admins.length > 0}}">
+    <view class="admin-item" wx:for="{{admins}}" wx:key="id" bindtap="onAdminClick" data-index="{{index}}">
+      <view class="admin-avatar">
+        <view class="avatar-icon">👤</view>
+      </view>
+      <view class="admin-info">
+        <view class="admin-name-row">
+          <text class="admin-name">{{item.keyName || item.receiverUsername || '管理员'}}</text>
+          <text class="admin-status {{item.expired ? 'expired' : 'valid'}}">{{item.statusText}}</text>
+        </view>
+        <view class="admin-time">{{item.rangeText}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:elif="{{!loading}}">
+    <view class="empty-icon">👨‍💼</view>
+    <view class="empty-text">暂无授权管理员</view>
+    <view class="empty-hint">添加授权管理员后，对方可与你共同管理这把锁</view>
+  </view>
+
+  <view class="bottom-btn-wrap">
+    <view class="add-btn" bindtap="goAddAdmin">
+      <view class="add-btn-icon">+</view>
+      <text>添加授权管理员</text>
+    </view>
+  </view>
+</view>
