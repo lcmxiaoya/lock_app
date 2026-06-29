@@ -21,7 +21,9 @@ public class JwtFilter extends OncePerRequestFilter {
         "/api/user/sendCode",
         "/api/user/register",
         "/api/user/login",
-        "/api/user/wxLogin"
+        "/api/user/wxLogin",
+        // 临时诊断：列出 cacerts + 测 TLS 握手。修好证书后请删除。
+        "/api/debug/cacerts"
     );
 
     private final JwtUtil jwtUtil;
