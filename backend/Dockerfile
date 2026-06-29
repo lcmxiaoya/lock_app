@@ -16,8 +16,7 @@ WORKDIR /app
 #        └─ DigiCert Secure Site OV G2 TLS CN RSA4096 SHA256 2022 CA1
 #            └─ DigiCert Global Root G2 (JRE cacerts 默认就有)
 #    缺的就是那个 2022 中间 CA，导进 JRE cacerts
-#    注意：微信云托管的 build context 是项目根目录，所以路径要带 backend/
-COPY backend/wechat-tls-intermediate.crt /tmp/wechat-tls-intermediate.crt
+COPY wechat-tls-intermediate.crt /tmp/wechat-tls-intermediate.crt
 RUN $JAVA_HOME/bin/keytool -importcert -trustcacerts -noprompt \
         -alias wechat-tls-intermediate \
         -file /tmp/wechat-tls-intermediate.crt \
