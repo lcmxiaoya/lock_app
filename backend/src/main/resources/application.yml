@@ -39,6 +39,9 @@ wechat:
   appid: ${WECHAT_APPID:wxfa8330bdeb61518c}
   secret: ${WECHAT_SECRET:0f331bae4d7c10c42b234c4ca5c2e5e8}
   api-base-url: ${WECHAT_API_BASE_URL:https://api.weixin.qq.com}
+  # 临时跳过 SSL 证书校验：云托管 runtime JRE 不带 api.weixin.qq.com 所需中间 CA 时
+  # 可设为 true，部署完成后务必改回 false。生产禁止开启（MITM 风险）。
+  skip-ssl-validate: ${WECHAT_SKIP_SSL_VALIDATE:false}
 
 # SMS Configuration (placeholder, using fixed code 666666)
 sms:

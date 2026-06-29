@@ -4,17 +4,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartlock.exception.BusinessException;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,10 +27,12 @@ import java.util.Map;
  *
  * <p>access_token 内存缓存 7000 秒（微信侧 7200，留 200 秒余量）。
  * 单实例够用；多实例后续上 Redis 集中存放，避免每个实例各刷一份导致频率限制。</p>
+ *
+ * <p>{@code wechat.skip-ssl-validate=true} 时跳过 SSL 证书校验——仅用于临时绕过
+ * cacerts 缺失问题（如云托管 runtime JRE 不带所需中间 CA），生产请保持 false。</p>
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class WxClient {
 
     @Value("${wechat.appid:}")
@@ -38,11 +44,51 @@ public class WxClient {
     @Value("${wechat.api-base-url:https://api.weixin.qq.com}")
     private String apiBaseUrl;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    /** dev/test 模式跳过 SSL 证书校验。生产务必保持 false。 */
+    @Value("${wechat.skip-ssl-validate:false}")
+    private boolean skipSslValidate;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private volatile HttpClient httpClient;
     private volatile String cachedAccessToken;
     private volatile long accessTokenExpiresAt = 0L;
+
+    /**
+     * 懒构造 HttpClient：默认走 JRE cacerts；skip-ssl-validate=true 时跳过证书校验。
+     */
+    private HttpClient httpClient() {
+        if (httpClient == null) {
+            synchronized (this) {
+                if (httpClient == null) {
+                    HttpClient.Builder builder = HttpClient.newBuilder()
+                            .connectTimeout(Duration.ofSeconds(10));
+                    if (skipSslValidate) {
+                        try {
+                            SSLContext sslContext = SSLContext.getInstance("TLS");
+                            sslContext.init(null, trustAllManagers(), new SecureRandom());
+                            builder.sslContext(sslContext);
+                            log.warn("WxClient: SSL certificate validation is DISABLED (wechat.skip-ssl-validate=true). DO NOT use in production.");
+                        } catch (Exception e) {
+                            log.error("Failed to init trust-all SSL context, fallback to default", e);
+                        }
+                    }
+                    httpClient = builder.build();
+                }
+            }
+        }
+        return httpClient;
+    }
+
+    private static TrustManager[] trustAllManagers() {
+        return new TrustManager[]{
+                new X509TrustManager() {
+                    @Override public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                    @Override public void checkClientTrusted(X509Certificate[] chain, String authType) { }
+                    @Override public void checkServerTrusted(X509Certificate[] chain, String authType) { }
+                }
+        };
+    }
 
     private void requireConfigured() {
         if (appid == null || appid.isEmpty() || secret == null || secret.isEmpty()) {
@@ -164,11 +210,15 @@ public class WxClient {
         return new BusinessException(2010, friendly);
     }
 
-    @SuppressWarnings("unchecked")
     private Map<String, Object> doGet(String url) {
         try {
-            ResponseEntity<String> resp = restTemplate.getForEntity(url, String.class);
-            JsonNode node = objectMapper.readTree(resp.getBody());
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .GET()
+                    .build();
+            HttpResponse<String> resp = httpClient().send(req, HttpResponse.BodyHandlers.ofString());
+            JsonNode node = objectMapper.readTree(resp.body());
             return objectMapper.convertValue(node, Map.class);
         } catch (BusinessException e) {
             throw e;
@@ -178,15 +228,17 @@ public class WxClient {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private Map<String, Object> doPostJson(String url, Object body) {
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
             String json = objectMapper.writeValueAsString(body);
-            HttpEntity<String> entity = new HttpEntity<>(json, headers);
-            ResponseEntity<String> resp = restTemplate.postForEntity(url, entity, String.class);
-            JsonNode node = objectMapper.readTree(resp.getBody());
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+            HttpResponse<String> resp = httpClient().send(req, HttpResponse.BodyHandlers.ofString());
+            JsonNode node = objectMapper.readTree(resp.body());
             return objectMapper.convertValue(node, Map.class);
         } catch (BusinessException e) {
             throw e;
