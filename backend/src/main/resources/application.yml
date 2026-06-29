@@ -36,8 +36,8 @@ ttlock:
 # WeChat Mini Program Configuration（用于"微信一键登录"）
 # 留空则一键登录入口禁用（WxClient 调用会抛业务异常），账号密码登录不受影响
 wechat:
-  appid: ${WECHAT_APPID:}
-  secret: ${WECHAT_SECRET:}
+  appid: ${WECHAT_APPID:wxfa8330bdeb61518c}
+  secret: ${WECHAT_SECRET:0f331bae4d7c10c42b234c4ca5c2e5e8}
   api-base-url: ${WECHAT_API_BASE_URL:https://api.weixin.qq.com}
 
 # SMS Configuration (placeholder, using fixed code 666666)
