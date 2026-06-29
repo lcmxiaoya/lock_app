@@ -145,7 +145,7 @@ public class UserService {
      * <ol>
      *   <li>用前端传来的 code 调 jscode2session，拿 openid + unionid</li>
      *   <li>用前端传来的 phoneCode 调 phonenumber.getPhoneNumber，拿 phone</li>
-     *   <li>按 openid → phone → username 三级查找现有用户：
+     *   <li>按 phone → username 两级查找现有用户：
      *     <ul>
      *       <li>命中：补绑缺失的 openid/unionid/phone 字段</li>
      *       <li>未命中：silentRegister 静默建号（含 TTLock 注册）</li>
@@ -153,6 +153,11 @@ public class UserService {
      *   </li>
      *   <li>颁发 JWT 返回</li>
      * </ol>
+     *
+     * <p><b>业务模型：手机号 = 身份（不是 openid）</b>。
+     * 一个微信号可以绑多个手机号，每个手机号都是一个独立的通通锁账号（独立 ttUsername）。
+     * 所以查找路径不能以 openid 为主键，否则同微信多号码会撞到同一 user。
+     * openid 只作为"该手机号曾用哪个微信登录过"的记录字段，可以被多个 user 共享（已移除 unique 约束）。</p>
      *
      * <p>不需要校验短信验证码 —— 微信侧的 wx.login 与 getPhoneNumber 已经分别用 code 凭证保证身份，
      * 手机号是用户微信账号实名绑定的，比 SMS 自填更可信。</p>
@@ -162,9 +167,9 @@ public class UserService {
         WxClient.WxSession session = wxClient.jscode2session(req.getCode());
         String phone = wxClient.getPhoneNumber(req.getPhoneCode());
 
-        // 三级查找：openid → phone → username（老用户 username 是手机号但 phone 字段还没回填）
-        User user = userRepository.findByOpenid(session.getOpenid())
-                .or(() -> userRepository.findByPhone(phone))
+        // 两级查找：phone → username（老用户 username 是手机号但 phone 字段还没回填）
+        // 注意：不能用 openid 查找，因为一个微信可绑多个号码，每个号码是独立账号。
+        User user = userRepository.findByPhone(phone)
                 .or(() -> userRepository.findByUsername(phone))
                 .orElse(null);
 

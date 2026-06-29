@@ -28,7 +28,9 @@ public class User {
     private String avatar;
 
     // 微信登录相关字段（与现有 username/password 并存，二者覆盖不同登录路径）
-    @Column(length = 64, unique = true)
+    // openid 不再 unique：一个微信号可绑多个手机号，每个手机号是独立账号，
+    // 因此 openid 可能被多个 user 共享（按 phone 查找，不用 openid 查找）。
+    @Column(length = 64)
     private String openid;
 
     @Column(length = 64)

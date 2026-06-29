@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Slf4j
 @Component
 public class DatabaseInitializer {
@@ -18,6 +20,7 @@ public class DatabaseInitializer {
     @PostConstruct
     public void init() {
         dropPartialUniqueIndex();
+        dropOpenidUniqueIndex();
         cleanupDuplicateKeys();
         backfillPhoneAndLoginType();
         backfillEkeyUserType();
@@ -37,6 +40,32 @@ public class DatabaseInitializer {
             }
         } catch (Exception e) {
             log.warn("Failed to drop idx_ekey_active_user_lock (may not exist)", e);
+        }
+    }
+
+    /**
+     * 历史背景：旧版本认为 openid 是 user 唯一身份（uniqueness 在 column 上）。
+     * 新设计：一个微信可绑多个手机号，每个手机号是独立账号，openid 需允许重复。
+     * 这里把 user 表上 openid 的唯一索引去掉。幂等。
+     */
+    private void dropOpenidUniqueIndex() {
+        try {
+            String db = jdbcTemplate.queryForObject("SELECT DATABASE()", String.class);
+            // 查找 openid 列上所有 unique 索引（排除主键）
+            List<String> indexNames = jdbcTemplate.queryForList(
+                "SELECT index_name FROM information_schema.statistics " +
+                "WHERE table_schema = ? AND table_name = 'user' " +
+                "  AND column_name = 'openid' AND non_unique = 0 AND index_name != 'PRIMARY'",
+                String.class, db);
+            for (String indexName : indexNames) {
+                jdbcTemplate.execute("DROP INDEX `" + indexName + "` ON `user`");
+                log.info("Dropped unique index {} on user.openid", indexName);
+            }
+            if (indexNames.isEmpty()) {
+                log.info("No unique index on user.openid, skipping");
+            }
+        } catch (Exception e) {
+            log.warn("Failed to drop unique index on user.openid (may not exist)", e);
         }
     }
 
