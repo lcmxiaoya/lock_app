@@ -1,5 +1,5 @@
 const app = getApp();
-const { lockApi, recordApi } = require('../../utils/api');
+const { lockApi, recordApi, keyApi } = require('../../utils/api');
 const ttlock = require('../../utils/ttlock');
 
 Page({
@@ -28,7 +28,16 @@ Page({
     // 名称编辑弹窗
     showNameModal: false,
     editingName: '',
-    savingName: false
+    savingName: false,
+
+    // 删除锁弹窗
+    ekeyRecordId: null,
+    showDeleteModal: false,
+    deleteConfirmText: '',
+    deletingLock: false,
+
+    // 蓝牙重置锁时需要的 lockData（initLock 初始化时下发到锁端的那串）
+    lockData: ''
   },
 
   onLoad(options) {
@@ -62,9 +71,12 @@ Page({
         ttLockId: data.lockId || null,
         electricQuantity: data.electricQuantity || 0,
         keyType: data.keyType || 'common',
+        ekeyRecordId: data.ekeyRecordId || null,
         ekeyStartDate: startDate,
         ekeyEndDate: endDate,
         groupId: data.groupId || 0,
+        // 物理重置锁时要用，缺失时蓝牙 resetLock 会拒绝
+        lockData: data.lockData || '',
         macIdText: this.formatMacId(data.lockMac, data.lockId),
         validityText: this.formatValidity(startDate, endDate),
         groupText: (data.groupId && data.groupId > 0) ? '已分组' : '未分组'
@@ -180,14 +192,23 @@ Page({
         return;
       }
 
-      // 插件返回的 log 可能是数组或对象，统一序列化为 JSON 字符串
+      // 插件返回的 log 实际是 JSON 字符串（官方 demo 也是 JSON.parse 后再用）。
+      // 兼容一下：字符串直接用，对象/数组走 JSON.stringify。
       const logJson = typeof log === 'string' ? log : JSON.stringify(log);
+
+      // 解析为数组用于显示条数 —— 不能用字符串 length，否则空数组 "[]" 会显示"已同步 2 条"
+      let logList = [];
+      if (Array.isArray(log)) {
+        logList = log;
+      } else if (typeof log === 'string') {
+        try { logList = JSON.parse(log || '[]') || []; } catch (e) { logList = []; }
+      }
 
       wx.showLoading({ title: '上传中...' });
       await recordApi.sync(this.data.lockId, logJson);
 
       wx.hideLoading();
-      const count = Array.isArray(log) ? log.length : (log && log.length) || 0;
+      const count = Array.isArray(logList) ? logList.length : 0;
       const now = new Date();
       const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       this.setData({ lastSyncText: `${timeStr} · ${count} 条` });
@@ -207,6 +228,33 @@ Page({
   },
 
   // ===== 修改锁名称 =====
+
+  onCopyField(e) {
+    const field = e.currentTarget.dataset.field;
+    const labelMap = { lockAlias: '锁编号', macId: 'MAC/ID', lockName: '锁名称' };
+    let text = '';
+    if (field === 'lockAlias') {
+      text = this.data.lockAlias || this.data.lockName || '';
+    } else if (field === 'macId') {
+      text = this.data.macIdText;
+    } else if (field === 'lockName') {
+      text = this.data.lockName;
+    }
+    if (!text || text === '-') {
+      wx.showToast({ title: `${labelMap[field] || '内容'}暂不可用`, icon: 'none' });
+      return;
+    }
+    wx.setClipboardData({
+      data: text,
+      success: () => {
+        wx.showToast({ title: `已复制${labelMap[field] || ''}`, icon: 'success' });
+      },
+      fail: (err) => {
+        console.error('Copy failed:', err);
+        wx.showToast({ title: '复制失败，请重试', icon: 'none' });
+      }
+    });
+  },
 
   onEditName() {
     if (this.data.keyType === 'common') {
@@ -259,5 +307,133 @@ Page({
     } finally {
       this.setData({ savingName: false });
     }
+  },
+
+  // ===== 危险操作 =====
+
+  getDeleteConfirmText() {
+    return this.data.lockAlias || this.data.lockName || this.data.macIdText;
+  },
+
+  onDeleteLock() {
+    if (this.data.keyType !== 'owner') {
+      wx.showToast({ title: '仅锁拥有者可删除', icon: 'none' });
+      return;
+    }
+    if (!this.data.lockId) {
+      wx.showToast({ title: '锁信息不完整', icon: 'none' });
+      return;
+    }
+    this.setData({
+      showDeleteModal: true,
+      deleteConfirmText: ''
+    });
+  },
+
+  onDeleteConfirmInput(e) {
+    this.setData({ deleteConfirmText: e.detail.value });
+  },
+
+  onCancelDelete() {
+    if (this.data.deletingLock) return;
+    this.setData({ showDeleteModal: false, deleteConfirmText: '' });
+  },
+
+  async onConfirmDelete() {
+    if (this.data.deletingLock) return;
+    const confirmText = this.getDeleteConfirmText();
+    const inputText = (this.data.deleteConfirmText || '').trim();
+    if (!confirmText || confirmText === '-') {
+      wx.showToast({ title: '锁编号不可用，请刷新后重试', icon: 'none' });
+      return;
+    }
+    if (inputText !== confirmText) {
+      wx.showToast({ title: '请输入正确的锁编号', icon: 'none' });
+      return;
+    }
+
+    wx.showModal({
+      title: '确认删除',
+      content: '删除后将从您的账户和云端移除该锁，此操作不可恢复。确定继续吗？',
+      confirmText: '删除',
+      confirmColor: '#ff4d4f',
+      success: async (res) => {
+        if (!res.confirm) return;
+
+        this.setData({ deletingLock: true });
+        try {
+          // 1) 物理重置锁：必须用户站在锁边（蓝牙范围内）。这一步成功之前不能调 HTTP，
+          // 否则会出现"服务端已删、锁端未重置"的不一致状态。
+          if (!this.data.lockData) {
+            throw new Error('锁数据不可用，请返回上一页重新进入');
+          }
+          wx.showLoading({ title: '请靠近锁并保持连接...', mask: true });
+          const resetResult = await Promise.race([
+            ttlock.resetLock(this.data.lockData),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('蓝牙重置超时，请靠近锁后重试')), 20000))
+          ]);
+          if (resetResult && resetResult.errorCode !== 0) {
+            throw new Error((resetResult && (resetResult.errorMsg || resetResult.description)) || '锁重置失败');
+          }
+
+          // 2) 服务端 / TTLock 云端记录删除
+          wx.showLoading({ title: '删除中...', mask: true });
+          await lockApi.delete(this.data.lockId, confirmText);
+
+          wx.hideLoading();
+          wx.showToast({ title: '删除成功', icon: 'success' });
+          this.setData({ showDeleteModal: false, deleteConfirmText: '' });
+          setTimeout(() => {
+            wx.reLaunch({ url: '/pages/lock-list/lock-list' });
+          }, 1500);
+        } catch (err) {
+          wx.hideLoading();
+          console.error('Delete lock failed:', err);
+          // api.js 内部对业务错误已经弹过 toast，但若 handleResponse 内层 JS 抛错
+          // （比如后端返非 JSON 响应导致 data.code 读不到属性），就没有任何 UI 提示。
+          // 这里做兜底，确保用户至少能看到一行错误。
+          const msg = (err && (err.message || err.errMsg)) || '删除失败，请稍后重试';
+          wx.showToast({ title: msg, icon: 'none' });
+        } finally {
+          this.setData({ deletingLock: false });
+          ttlock.finishOperations().catch(() => {});
+        }
+      }
+    });
+  },
+
+  onQuitAdmin() {
+    const { keyType, ekeyRecordId } = this.data;
+    if (keyType !== 'admin') {
+      wx.showToast({ title: '当前角色无法退出管理', icon: 'none' });
+      return;
+    }
+    if (!ekeyRecordId) {
+      wx.showToast({ title: '管理员钥匙信息不完整', icon: 'none' });
+      return;
+    }
+
+    wx.showModal({
+      title: '退出管理',
+      content: '退出后您将无法继续管理或打开这把锁，确定继续吗？',
+      confirmText: '退出',
+      confirmColor: '#ff4d4f',
+      success: async (res) => {
+        if (!res.confirm) return;
+
+        try {
+          wx.showLoading({ title: '退出中...', mask: true });
+          await keyApi.delete(ekeyRecordId);
+          wx.hideLoading();
+          wx.showToast({ title: '已退出管理', icon: 'success' });
+          setTimeout(() => {
+            wx.reLaunch({ url: '/pages/lock-list/lock-list' });
+          }, 800);
+        } catch (err) {
+          wx.hideLoading();
+          console.error('Quit admin failed:', err);
+        }
+      }
+    });
   }
 });

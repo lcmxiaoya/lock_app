@@ -17,19 +17,20 @@
     <view class="unlock-hint">点击开锁，长按闭锁</view>
 
     <view class="control-actions">
-      <view class="action-item" wx:if="{{lockInfo.keyType !== 'common'}}" bindtap="goKeyList">
+      <!-- 钥匙/密码/设置/记录/IC卡/指纹：owner 与 admin 都可看；loadLockDetail 未完成时（keyType 仍为 undefined）一律不渲染，避免退出管理后短暂闪现 -->
+      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner' || lockInfo.keyType === 'admin'}}" bindtap="goKeyList">
         <view class="action-icon">🔑</view>
         <view class="action-text">钥匙管理</view>
       </view>
-      <view class="action-item" wx:if="{{lockInfo.keyType !== 'common'}}" bindtap="goPwdList">
+      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner' || lockInfo.keyType === 'admin'}}" bindtap="goPwdList">
         <view class="action-icon">🔢</view>
         <view class="action-text">密码管理</view>
       </view>
-      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner'}}" bindtap="goICCardList">
+      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner' || lockInfo.keyType === 'admin'}}" bindtap="goICCardList">
         <view class="action-icon">💳</view>
         <view class="action-text">IC 卡管理</view>
       </view>
-      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner'}}" bindtap="goFingerprintList">
+      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner' || lockInfo.keyType === 'admin'}}" bindtap="goFingerprintList">
         <view class="action-icon">👆</view>
         <view class="action-text">指纹管理</view>
       </view>
@@ -41,7 +42,7 @@
         <view class="action-icon">👨‍💼</view>
         <view class="action-text">授权管理员</view>
       </view>
-      <view class="action-item" wx:if="{{lockInfo.keyType !== 'common'}}" bindtap="goSettings">
+      <view class="action-item" wx:if="{{lockInfo.keyType === 'owner' || lockInfo.keyType === 'admin'}}" bindtap="goSettings">
         <view class="action-icon">⚙️</view>
         <view class="action-text">设置</view>
       </view>

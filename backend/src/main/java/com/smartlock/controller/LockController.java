@@ -59,9 +59,9 @@ public class LockController {
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         Long lockId = ((Number) body.get("lockId")).longValue();
-        String password = (String) body.get("password");
-        log.info("Delete lock request: userId={}, lockId={}, passwordLength={}", userId, lockId, password != null ? password.length() : 0);
-        lockService.deleteLock(userId, lockId, password);
+        String confirmText = (String) body.get("confirmText");
+        log.info("Delete lock request: userId={}, lockId={}, hasConfirmText={}", userId, lockId, confirmText != null && !confirmText.isEmpty());
+        lockService.deleteLock(userId, lockId, confirmText);
         return ApiResponse.success(null);
     }
 

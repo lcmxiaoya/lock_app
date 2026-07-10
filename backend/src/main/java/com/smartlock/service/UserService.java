@@ -278,6 +278,49 @@ public class UserService {
     }
 
     /**
+     * 用于"发送钥匙 / 授权管理员"场景：若目标手机号/邮箱账号不存在，
+     * 自动创建本地账号 + 同步的通通锁账号，并把 ekey.user_id 直接挂到新账号。
+     *
+     * <p>关键点：bootstrapTTLockUser 需要 user.id（用于生成 ttPassword），
+     * 而 ttUsername 又要带 envPrefix 与 username 一致。所以必须先 save() 拿到 id，
+     * 再注册 TTLock；最后在同一个事务里把 access_token 一并写回。</p>
+     */
+    @Transactional
+    public User autoProvisionReceiver(String receiverUsername) {
+        User existing = findByUsername(receiverUsername);
+        if (existing != null) {
+            return existing;
+        }
+
+        if (userRepository.existsByUsername(receiverUsername)) {
+            // 并发兜底：两条 sendKey 几乎同时跑，第二条 unique 约束先于 findByUsername 命中。
+            return findByUsername(receiverUsername);
+        }
+
+        log.info("Auto-provisioning receiver account: {}", receiverUsername);
+
+        User user = new User();
+        user.setUsername(receiverUsername);
+        user.setNickname("User");
+        user.setLoginType("password");
+        // 与 register 行为保持一致：如果是手机号格式，phone 字段也填上，
+        // 之后该用户首次微信一键登录时能直接命中。
+        if (receiverUsername.matches("^1[3-9]\\d{9}$")) {
+            user.setPhone(receiverUsername);
+        }
+        // 锁主不会去登录这个被自动创建的账号，密码用 64 字节随机串 + bcrypt 兜住。
+        String randomPwd = UUID.randomUUID().toString().replace("-", "")
+                + UUID.randomUUID().toString().replace("-", "");
+        user.setPassword(passwordEncoder.encode(randomPwd));
+        userRepository.save(user);
+
+        bootstrapTTLockUser(user);
+        log.info("Auto-provisioned receiver: id={}, username={}, ttUsername={}",
+                user.getId(), user.getUsername(), user.getTtUsername());
+        return user;
+    }
+
+    /**
      * Refresh TTLock token if needed
      */
     /**

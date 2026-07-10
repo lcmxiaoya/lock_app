@@ -9,14 +9,20 @@
   <view class="section">
     <view class="section-title">基本信息</view>
     <view class="info-card">
-      <view class="info-row">
+      <view class="info-row" bindtap="onCopyField" data-field="lockAlias">
         <text class="info-label">锁编号</text>
-        <text class="info-value">{{lockAlias || lockName || '-'}}</text>
+        <view class="info-value-wrap">
+          <text class="info-value">{{lockAlias || lockName || '-'}}</text>
+          <text class="copy-tag">复制</text>
+        </view>
       </view>
       <view class="info-divider"></view>
-      <view class="info-row">
+      <view class="info-row" bindtap="onCopyField" data-field="macId">
         <text class="info-label">MAC/ID</text>
-        <text class="info-value info-value-mono">{{macIdText}}</text>
+        <view class="info-value-wrap">
+          <text class="info-value info-value-mono">{{macIdText}}</text>
+          <text class="copy-tag">复制</text>
+        </view>
       </view>
       <view class="info-divider"></view>
       <view class="info-row" bindtap="onRefreshBattery">
@@ -32,11 +38,12 @@
         <text class="info-value">{{validityText}}</text>
       </view>
       <view class="info-divider"></view>
-      <view class="info-row" bindtap="onEditName">
-        <text class="info-label">名称</text>
+      <view class="info-row">
+        <text class="info-label" bindtap="onEditName" style="flex:1">名称</text>
         <view class="info-value-wrap">
-          <text class="info-value">{{lockName || '-'}}</text>
-          <text class="info-arrow">›</text>
+          <text class="info-value" bindtap="onEditName">{{lockName || '-'}}</text>
+          <text class="copy-tag" catchtap="onCopyField" data-field="lockName">复制</text>
+          <text class="info-arrow" bindtap="onEditName">›</text>
         </view>
       </view>
       <view class="info-divider"></view>
@@ -119,6 +126,23 @@
     <view class="modal-buttons">
       <view class="modal-btn modal-btn-cancel" bindtap="onCancelName">取消</view>
       <view class="modal-btn modal-btn-confirm" bindtap="onConfirmName">保存</view>
+    </view>
+  </view>
+</view>
+
+<view class="modal-mask" wx:if="{{showDeleteModal}}" bindtap="onCancelDelete">
+  <view class="modal-body" catchtap="noop">
+    <view class="modal-title danger-text">删除这把锁</view>
+    <view class="modal-desc modal-desc-danger">将从您的账户和云端移除该锁，删除后不可恢复。请输入锁编号「{{lockAlias || lockName || macIdText}}」确认。</view>
+    <view class="modal-input-wrap">
+      <input class="modal-input" type="text" maxlength="100"
+             placeholder="请输入上方锁编号" value="{{deleteConfirmText}}"
+             focus="{{showDeleteModal}}"
+             bindinput="onDeleteConfirmInput" />
+    </view>
+    <view class="modal-buttons">
+      <view class="modal-btn modal-btn-cancel" bindtap="onCancelDelete">取消</view>
+      <view class="modal-btn modal-btn-danger" bindtap="onConfirmDelete">{{deletingLock ? '删除中...' : '确认删除'}}</view>
     </view>
   </view>
 </view>

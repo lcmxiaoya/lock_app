@@ -144,11 +144,11 @@ const lockApi = {
     });
   },
   
-  delete(lockId, password) {
+  delete(lockId, confirmText) {
     return request({
       url: '/api/lock/delete',
       method: 'POST',
-      data: { lockId, password }
+      data: { lockId, confirmText }
     });
   },
   

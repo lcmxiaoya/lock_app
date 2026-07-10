@@ -48,12 +48,21 @@ public class KeyService {
         // Use the TTLock lockId for API calls
         Long ttLockId = lock.getLockId();
 
-        // Check if receiver exists
+        // 接收者：本地账号存在则直接发；不存在则自动创建本地 + 通通锁账号，再发钥匙。
+        // 这样锁主把钥匙发给未注册的手机号也能直接成功，对方首次打开 App 时就能看到这把钥匙。
         User receiver = userService.findByUsername(request.getReceiverUsername());
-        String ttReceiverUsername;
+        if (receiver == null) {
+            receiver = userService.autoProvisionReceiver(request.getReceiverUsername());
+        }
+        String ttReceiverUsername = receiver.getTtUsername();
+        // 本地账号刚自动创建时，TTLock 云端尚无此用户，仍需 createUser=1 让 sendKey 帮忙建号。
+        // 已存在账号置 0，避免覆盖云端已有属性。
         int createUser = 0;
-
-        Long targetUserId = receiver != null ? receiver.getId() : userId;
+        if (ttReceiverUsername == null || ttReceiverUsername.isEmpty()) {
+            ttReceiverUsername = request.getReceiverUsername();
+            createUser = 1;
+        }
+        Long targetUserId = receiver.getId();
 
         // Ensure only one active common key per user per lock
         // Invalidate existing active key before proceeding (TTLock also enforces this)
@@ -62,14 +71,6 @@ public class KeyService {
                     existingKey.setStatus("invalid");
                     eKeyRepository.save(existingKey);
                 });
-
-        if (receiver != null) {
-            ttReceiverUsername = receiver.getTtUsername();
-        } else {
-            // Use phone/email as TTLock username
-            ttReceiverUsername = request.getReceiverUsername();
-            createUser = 1;
-        }
 
         // Call TTLock API
         Map<String, Object> result = ttLockClient.sendKey(
@@ -91,7 +92,7 @@ public class KeyService {
 
         // Save key record
         EKey eKey = new EKey();
-        eKey.setUserId(targetUserId); // Will be updated when receiver registers
+        eKey.setUserId(targetUserId); // 接收者已通过 autoProvisionReceiver 在本地落库，可直接绑定 userId
         eKey.setLockId(request.getLockId());
         eKey.setKeyId(keyId);
         eKey.setKeyName(request.getKeyName());

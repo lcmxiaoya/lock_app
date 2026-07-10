@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +29,6 @@ public class LockService {
     private final TTLockClient ttLockClient;
     private final UserService userService;
     private final LockPermissionService permission;
-    private final PasswordEncoder passwordEncoder;
 
     /**
      * Add lock
@@ -180,7 +178,7 @@ public class LockService {
      * Delete lock
      */
     @Transactional
-    public void deleteLock(Long userId, Long lockRecordId, String password) {
+    public void deleteLock(Long userId, Long lockRecordId, String confirmText) {
         log.info("Delete lock request: userId={}, lockRecordId={}", userId, lockRecordId);
 
         Lock lock = lockRepository.findById(lockRecordId)
@@ -195,12 +193,14 @@ public class LockService {
             throw new BusinessException(3003, "Only lock owner can delete the lock");
         }
 
-        // Verify password
-        User user = userService.getUserById(userId);
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            log.warn("Password verification failed: userId={}", userId);
-            throw new BusinessException(3003, "Invalid password");
+        // Confirm by lock identifier instead of account password so WeChat-phone-login users can delete too.
+        String expectedConfirmText = firstNonBlank(lock.getLockAlias(), lock.getLockName(), lock.getLockMac(), String.valueOf(lock.getLockId()));
+        if (confirmText == null || !confirmText.trim().equals(expectedConfirmText)) {
+            log.warn("Lock delete confirmation failed: userId={}, lockRecordId={}", userId, lockRecordId);
+            throw new BusinessException(3003, "锁编号确认不正确");
         }
+
+        User user = userService.getUserById(userId);
 
         // Step 1: Delete lock from TTLock cloud
         try {
@@ -225,6 +225,15 @@ public class LockService {
         // Step 3: Delete lock record
         lockRepository.delete(lock);
         log.info("Lock deleted successfully: lockRecordId={}, lockId={}", lockRecordId, lock.getLockId());
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.trim().isEmpty()) {
+                return value;
+            }
+        }
+        return "";
     }
 
     /**
