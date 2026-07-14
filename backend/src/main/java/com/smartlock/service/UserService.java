@@ -97,7 +97,7 @@ public class UserService {
         long idSuffix = user.getId() % 10000;
         String ttPassword = "2026#" + idSuffix;
         user.setTtPassword(ttPassword);
-        user.setTtUsername(envPrefix + user.getUsername());
+        user.setTtUsername( user.getUsername());
 
         Map<String, Object> registerResult;
         try {

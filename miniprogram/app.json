@@ -1,8 +1,8 @@
 {
   "pages": [
+    "pages/lock-list/lock-list",
     "pages/login/login",
     "pages/register/register",
-    "pages/lock-list/lock-list",
     "pages/lock-control/lock-control",
     "pages/lock-settings/lock-settings",
     "pages/key-list/key-list",

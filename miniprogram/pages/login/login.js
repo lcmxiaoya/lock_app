@@ -11,7 +11,8 @@ Page({
     username: '',
     password: '',
     showAccountLogin: false,
-    agreed: true
+    // 合规要求:用户须主动勾选才能登录,不得默认同意隐私政策 / 用户协议
+    agreed: false
   },
 
   toggleAccountLogin() {
@@ -26,8 +27,29 @@ Page({
     if (this.data.agreed) {
       return true;
     }
-    wx.showToast({ title: '请先阅读并同意协议', icon: 'none' });
+    // 兜底拦截:open-type="getPhoneNumber" 按钮的微信系统授权弹窗无法用 JS 阻止,
+    // 即便走到了 onWxLogin,也必须在此拒绝使用返回的 code,以保证"未明确同意我方协议前,不做任何业务处理"
+    wx.showModal({
+      title: '请先阅读并同意协议',
+      content: '请先勾选下方的《隐私政策》和《用户协议》后再登录。',
+      showCancel: false,
+      confirmText: '我知道了'
+    });
     return false;
+  },
+
+  // "手机号快捷登录"按钮的 bindtap 守门:未勾选协议时先强提示用户去勾选,
+  // 再走微信 getPhoneNumber 流程,避免用户在被引导授权手机号之前未明确知悉我方协议
+  onPhoneLoginTap() {
+    if (this.data.agreed) {
+      return;
+    }
+    wx.showModal({
+      title: '请先阅读并同意协议',
+      content: '使用手机号快捷登录前,请先勾选下方的《隐私政策》和《用户协议》。',
+      showCancel: false,
+      confirmText: '我知道了'
+    });
   },
 
   onShow() {

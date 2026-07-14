@@ -12,32 +12,33 @@
   text-align: center;
 }
 
-.user-avatar {
-  margin-bottom: 20rpx;
-}
-
-.avatar-icon {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.2);
-  display: flex;
+.user-line {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 60rpx;
-  margin: 0 auto;
+  gap: 14rpx;
 }
 
-.user-name {
-  font-size: 36rpx;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 8rpx;
+.user-line-icon {
+  flex-shrink: 0;
+  display: inline-block;
+  width: 40rpx;
+  height: 40rpx;
+  /* 把灰色/深色的 user.png 转成白色,在蓝色渐变背景上清晰可见 */
+  filter: brightness(0) invert(1);
 }
 
 .user-phone {
-  font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 30rpx;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 1rpx;
+  line-height: 1;
+}
+
+.user-hint {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .menu-list {
@@ -63,6 +64,11 @@
   color: #999;
 }
 
+.menu-value-link {
+  color: #2979ff;
+  font-size: 28rpx;
+}
+
 .logout-btn {
   margin: 60rpx 30rpx;
   height: 96rpx;
@@ -79,4 +85,51 @@
 
 .logout-btn:active {
   background: #fff2f0;
+}
+
+/* 未登录态登录卡 */
+.login-card {
+  background: #fff;
+  margin: 30rpx 30rpx 0;
+  border-radius: 24rpx;
+  padding: 40rpx 30rpx 36rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-btn {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: linear-gradient(135deg, #2979ff 0%, #1565c0 100%);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 600;
+  border-radius: 44rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.login-btn::after {
+  border: none;
+}
+
+.login-btn-hover {
+  opacity: 0.85;
+}
+
+.login-btn-text {
+  line-height: 1;
+}
+
+.login-tip {
+  margin-top: 20rpx;
+  font-size: 24rpx;
+  color: #999;
+  text-align: center;
 }

@@ -162,7 +162,7 @@
   color: var(--text-secondary);
 }
 
-/* 空状态 */
+/* 空状态(已登录但没有锁) */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -189,5 +189,118 @@
 
 .empty-hint {
   font-size: 26rpx;
+  color: var(--text-hint);
+}
+
+/* 游客态:未登录时展示功能介绍,提供"自主选择登录"入口 */
+.guest-state {
+  padding: 40rpx 0 60rpx;
+}
+
+.feature-list {
+  background-color: var(--card-bg);
+  border-radius: 24rpx;
+  padding: 8rpx 32rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 0;
+  border-bottom: 1rpx solid var(--border-color);
+}
+
+.feature-item:last-child {
+  border-bottom: none;
+}
+
+.feature-icon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.feature-icon-1 {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
+
+.feature-icon-2 {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+}
+
+.feature-icon-3 {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+}
+
+.feature-icon-4 {
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+}
+
+.feature-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.feature-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6rpx;
+}
+
+.feature-desc {
+  font-size: 24rpx;
+  color: var(--text-hint);
+  line-height: 1.4;
+}
+
+.login-cta {
+  margin-top: 48rpx;
+  padding: 0 16rpx;
+}
+
+.login-cta-btn {
+  width: 100%;
+  height: 96rpx;
+  line-height: 96rpx;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  color: #FFFFFF;
+  font-size: 32rpx;
+  font-weight: 600;
+  border-radius: 48rpx;
+  border: none;
+  box-shadow: 0 8rpx 24rpx rgba(41, 121, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  /* 兼容 button 元素的内联块默认行为,确保 flex 子元素能正常居中 */
+  box-sizing: border-box;
+}
+
+.login-cta-btn::after {
+  border: none;
+}
+
+.login-cta-btn-hover {
+  opacity: 0.85;
+}
+
+.login-cta-text {
+  /* 让 text 元素参与 flex 布局,避免某些机型 button 内 text 偏移 */
+  line-height: 1;
+}
+
+.login-cta-hint {
+  margin-top: 20rpx;
+  text-align: center;
+  font-size: 24rpx;
   color: var(--text-hint);
 }

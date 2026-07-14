@@ -1,21 +1,54 @@
 <view class="profile-page">
-  <view class="user-card">
-    <view class="user-avatar">
-      <view class="avatar-icon">👤</view>
+  <!-- 已登录用户信息 -->
+  <block wx:if="{{isLoggedIn && userInfo}}">
+    <view class="user-card">
+      <view class="user-line" wx:if="{{userInfo.username}}">
+        <image class="user-line-icon" src="/images/user.png" mode="aspectFit" />
+        <text class="user-phone">{{userInfo.username}}</text>
+      </view>
     </view>
-    <view class="user-name">{{userInfo.nickname || userInfo.username || '用户'}}</view>
-    <view class="user-phone" wx:if="{{userInfo.username}}">{{userInfo.username}}</view>
-  </view>
 
-  <view class="menu-list">
-    <view class="menu-item">
-      <text class="menu-label">版本</text>
-      <text class="menu-value">1.0.0</text>
+    <view class="menu-list">
+      <view class="menu-item" bindtap="copySupportEmail">
+        <text class="menu-label">问题反馈</text>
+        <text class="menu-value menu-value-link">717255547@qq.com ›</text>
+      </view>
+      <view class="menu-item">
+        <text class="menu-label">版本</text>
+        <text class="menu-value">1.0.0</text>
+      </view>
     </view>
-  </view>
 
-  <view class="logout-btn" bindtap="onLogout">
-    <text>退出登录</text>
-  </view>
+    <view class="logout-btn" bindtap="onLogout">
+      <text>退出登录</text>
+    </view>
+  </block>
+
+  <!-- 未登录:展示登录入口,不强制跳页 -->
+  <block wx:else>
+    <view class="user-card">
+      <view class="user-line">
+        <image class="user-line-icon" src="/images/user.png" mode="aspectFit" />
+        <text class="user-phone">未登录</text>
+      </view>
+      <view class="user-hint">登录后可使用完整功能</view>
+    </view>
+
+    <view class="login-card">
+      <button class="login-btn" bindtap="goLogin" hover-class="login-btn-hover">手机号快捷登录</button>
+      <view class="login-tip">登录后可绑定智能锁、分享钥匙、查看开锁记录</view>
+    </view>
+
+    <view class="menu-list">
+      <view class="menu-item" bindtap="copySupportEmail">
+        <text class="menu-label">问题反馈</text>
+        <text class="menu-value menu-value-link">717255547@qq.com ›</text>
+      </view>
+      <view class="menu-item">
+        <text class="menu-label">版本</text>
+        <text class="menu-value">1.0.0</text>
+      </view>
+    </view>
+  </block>
 </view>
 <custom-tab-bar></custom-tab-bar>

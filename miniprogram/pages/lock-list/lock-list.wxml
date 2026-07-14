@@ -6,7 +6,9 @@
       <view class="header-row">
         <view>
           <view class="page-title">我的锁</view>
-          <view class="page-desc" wx:if="{{locks.length > 0}}">共 {{locks.length}} 把锁</view>
+          <view class="page-desc" wx:if="{{isLoggedIn && locks.length > 0}}">共 {{locks.length}} 把锁</view>
+          <view class="page-desc" wx:elif="{{isLoggedIn}}">登录后可管理您的智能锁</view>
+          <view class="page-desc" wx:else>欢迎使用星防卫智能锁</view>
         </view>
         <view class="header-add-btn" bindtap="goAddLock">
           <view class="icon-add" style="color: #fff; width: 32rpx; height: 32rpx;"></view>
@@ -17,7 +19,7 @@
 
   <view class="content-area">
     <!-- 锁列表 -->
-    <view class="lock-list" wx:if="{{locks.length > 0}}">
+    <view class="lock-list" wx:if="{{isLoggedIn && locks.length > 0}}">
       <view class="lock-card" wx:for="{{locks}}" wx:key="id" bindtap="goLockControl" data-id="{{item.id}}">
         <view class="lock-card-top">
           <view class="lock-icon-wrap">
@@ -31,7 +33,7 @@
           </view>
           <view class="lock-status-dot {{item.electricQuantity > 20 ? 'online' : 'low'}}"></view>
         </view>
-        
+
         <view class="lock-card-bottom">
           <view class="lock-meta">
             <view class="meta-item">
@@ -50,13 +52,52 @@
       </view>
     </view>
 
-    <!-- 空状态 -->
-    <view class="empty-state" wx:else>
+    <!-- 已登录但暂无设备 -->
+    <view class="empty-state" wx:elif="{{isLoggedIn}}">
       <view class="empty-icon-wrap">
         <view class="icon-lock" style="color: var(--primary-light); width: 72rpx; height: 72rpx; border-width: 6rpx;"></view>
       </view>
       <view class="empty-text">暂无锁设备</view>
       <view class="empty-hint">点击右上角 + 添加新锁</view>
+    </view>
+
+    <!-- 未登录:先展示功能服务介绍,再让用户自主选择登录 -->
+    <view class="guest-state" wx:else>
+      <view class="feature-list">
+        <view class="feature-item">
+          <view class="feature-icon feature-icon-1">🔐</view>
+          <view class="feature-info">
+            <view class="feature-title">蓝牙开锁</view>
+            <view class="feature-desc">手机靠近智能锁,一键快速开锁</view>
+          </view>
+        </view>
+        <view class="feature-item">
+          <view class="feature-icon feature-icon-2">🔑</view>
+          <view class="feature-info">
+            <view class="feature-title">钥匙管理</view>
+            <view class="feature-desc">随时查看、分享、撤回开锁权限</view>
+          </view>
+        </view>
+        <view class="feature-item">
+          <view class="feature-icon feature-icon-3">📋</view>
+          <view class="feature-info">
+            <view class="feature-title">密码与卡片</view>
+            <view class="feature-desc">生成临时密码、添加门卡与指纹</view>
+          </view>
+        </view>
+        <view class="feature-item">
+          <view class="feature-icon feature-icon-4">📊</view>
+          <view class="feature-info">
+            <view class="feature-title">开锁记录</view>
+            <view class="feature-desc">完整记录每一次开锁详情</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="login-cta">
+        <button class="login-cta-btn" bindtap="goLogin" hover-class="login-cta-btn-hover">登录后管理我的锁</button>
+        <view class="login-cta-hint">登录后可绑定设备、分享钥匙、查看记录</view>
+      </view>
     </view>
   </view>
 </view>
