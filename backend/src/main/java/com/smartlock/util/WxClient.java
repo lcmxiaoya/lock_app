@@ -127,6 +127,7 @@ public class WxClient {
 
     /**
      * 通过 getPhoneNumber 回调里的 code 换手机号。返回纯号码（不带国家码）。
+     * 若 access_token 失效（errcode=40001），自动清缓存并重试一次。
      */
     public String getPhoneNumber(String phoneCode) {
         requireConfigured();
@@ -142,7 +143,21 @@ public class WxClient {
 
         Map<String, Object> body = doPostJson(url, req);
         if (body.containsKey("errcode") && ((Number) body.get("errcode")).intValue() != 0) {
-            throw translateWxError(body, "获取手机号失败");
+            int errcode = ((Number) body.get("errcode")).intValue();
+            if (errcode == 40001) {
+                log.warn("access_token invalid, clearing cache and retrying");
+                clearAccessTokenCache();
+                accessToken = getAccessToken();
+                url = UriComponentsBuilder
+                        .fromHttpUrl(apiBaseUrl + "/wxa/business/getuserphonenumber")
+                        .queryParam("access_token", accessToken)
+                        .build()
+                        .toUriString();
+                body = doPostJson(url, req);
+            }
+            if (body.containsKey("errcode") && ((Number) body.get("errcode")).intValue() != 0) {
+                throw translateWxError(body, "获取手机号失败");
+            }
         }
         Object phoneInfoObj = body.get("phone_info");
         if (!(phoneInfoObj instanceof Map)) {
@@ -194,17 +209,29 @@ public class WxClient {
         }
     }
 
+    /**
+     * 清除 access_token 缓存，强制下次调用时重新获取。
+     */
+    public void clearAccessTokenCache() {
+        synchronized (this) {
+            this.cachedAccessToken = null;
+            this.accessTokenExpiresAt = 0L;
+            log.info("WX access_token cache cleared");
+        }
+    }
+
     private BusinessException translateWxError(Map<String, Object> body, String fallbackPrefix) {
         int errcode = ((Number) body.get("errcode")).intValue();
         String errmsg = String.valueOf(body.get("errmsg"));
         String friendly;
         switch (errcode) {
+            case 40001: friendly = "微信登录凭证已过期，请重试"; break;
             case 40029: friendly = "微信授权已过期，请重新点击登录"; break;
             case 45011: friendly = "操作过于频繁，请稍后再试"; break;
             case 40013: friendly = "微信 AppID 配置错误"; break;
             case 40125: friendly = "微信 AppSecret 配置错误"; break;
             case 40226: friendly = "高风险用户，微信侧已拒绝"; break;
-            default:    friendly = fallbackPrefix + "：" + errmsg + "(" + errcode + ")";
+            default:    friendly = fallbackPrefix + "（" + errcode + "）";
         }
         log.warn("WX API error: code={}, msg={}", errcode, errmsg);
         return new BusinessException(2010, friendly);
