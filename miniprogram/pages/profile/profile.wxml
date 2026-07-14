@@ -3,7 +3,7 @@
   <block wx:if="{{isLoggedIn && userInfo}}">
     <view class="user-card">
       <view class="user-line" wx:if="{{userInfo.username}}">
-        <image class="user-line-icon" src="/images/user.png" mode="aspectFit" />
+        <image class="user-line-icon" src="/images/user-avatar.svg" mode="aspectFit" />
         <text class="user-phone">{{userInfo.username}}</text>
       </view>
     </view>
@@ -28,7 +28,7 @@
   <block wx:else>
     <view class="user-card">
       <view class="user-line">
-        <image class="user-line-icon" src="/images/user.png" mode="aspectFit" />
+        <image class="user-line-icon" src="/images/user-avatar.svg" mode="aspectFit" />
         <text class="user-phone">未登录</text>
       </view>
       <view class="user-hint">登录后可使用完整功能</view>

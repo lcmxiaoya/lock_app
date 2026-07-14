@@ -135,6 +135,15 @@ public class KeyService {
             throw new BusinessException(4002, "不能授权给自己");
         }
 
+        // 接收者若已有该锁的 active admin ekey，跳过重复授权
+        User receiver = userService.findByUsername(request.getReceiverUsername());
+        if (receiver != null) {
+            eKeyRepository.findByUserIdAndLockIdAndKeyTypeAndStatus(receiver.getId(), request.getLockId(), "admin", "active")
+                    .ifPresent(existingKey -> {
+                        throw new BusinessException(4003, "该用户已是此锁的管理员，无需重复授权");
+                    });
+        }
+
         // Step 1: 复用 sendKey 主流程（同事务内，本地落库 + TTLock send）
         Map<String, Object> sendResp = sendKey(userId, request);
         Integer keyId = (Integer) sendResp.get("keyId");

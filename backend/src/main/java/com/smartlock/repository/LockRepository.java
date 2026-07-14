@@ -18,15 +18,15 @@ public interface LockRepository extends JpaRepository<Lock, Long> {
     List<Lock> findByUserId(Long userId);
     
     @Query("SELECT l FROM Lock l WHERE l.id IN " +
-           "(SELECT e.lockId FROM EKey e WHERE e.userId = :userId AND e.keyType = 'common') " +
+           "(SELECT e.lockId FROM EKey e WHERE e.userId = :userId AND e.keyType IN ('common','admin')) " +
            "OR l.userId = :userId")
     List<Lock> findByUserIdOrSharedWith(@Param("userId") Long userId);
 
     @Query(value = "SELECT l FROM Lock l WHERE l.id IN " +
-           "(SELECT e.lockId FROM EKey e WHERE e.userId = :userId AND e.keyType = 'common') " +
+           "(SELECT e.lockId FROM EKey e WHERE e.userId = :userId AND e.keyType IN ('common','admin')) " +
            "OR l.userId = :userId",
            countQuery = "SELECT COUNT(l) FROM Lock l WHERE l.id IN " +
-           "(SELECT e.lockId FROM EKey e WHERE e.userId = :userId AND e.keyType = 'common') " +
+           "(SELECT e.lockId FROM EKey e WHERE e.userId = :userId AND e.keyType IN ('common','admin')) " +
            "OR l.userId = :userId")
     Page<Lock> findByUserIdOrSharedWith(@Param("userId") Long userId, Pageable pageable);
 }

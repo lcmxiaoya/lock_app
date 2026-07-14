@@ -34,18 +34,48 @@ Page({
 
   onSelectType(e) {
     const type = parseInt(e.currentTarget.dataset.type);
-    this.setData({
+    const update = {
       selectedType: type,
       pwdTypeName: this.getPwdTypeName(type),
       generatedPwd: '',
       generatedPwdId: null,
-      startDateStr: '',
-      endDateStr: '',
-      startDate: 0,
-      endDate: 0,
       isPermanent: false,
       customPwd: ''
-    });
+    };
+
+    const now = Date.now();
+    const fmt = this.formatDateTime;
+
+    if (type === 3) {
+      const oneDayLater = now + 24 * 60 * 60 * 1000;
+      Object.assign(update, {
+        startDate: now,
+        endDate: oneDayLater,
+        startDateStr: fmt(new Date(now)),
+        endDateStr: fmt(new Date(oneDayLater))
+      });
+    } else if (type === 0) {
+      Object.assign(update, {
+        startDate: now,
+        endDate: 0,
+        startDateStr: fmt(new Date(now)),
+        endDateStr: ''
+      });
+    } else {
+      Object.assign(update, {
+        startDateStr: '',
+        endDateStr: '',
+        startDate: 0,
+        endDate: 0
+      });
+    }
+
+    this.setData(update);
+  },
+
+  formatDateTime(d) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   },
 
   onPwdNameInput(e) {

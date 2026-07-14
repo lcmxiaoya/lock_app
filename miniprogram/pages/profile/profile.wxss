@@ -22,10 +22,8 @@
 .user-line-icon {
   flex-shrink: 0;
   display: inline-block;
-  width: 40rpx;
-  height: 40rpx;
-  /* 把灰色/深色的 user.png 转成白色,在蓝色渐变背景上清晰可见 */
-  filter: brightness(0) invert(1);
+  width: 80rpx;
+  height: 80rpx;
 }
 
 .user-phone {

@@ -17,7 +17,6 @@
     <view class="tab-item {{selectedType === 1 ? 'active' : ''}}" data-type="1" bindtap="onSelectType">单次</view>
     <view class="tab-item {{selectedType === 2 ? 'active' : ''}}" data-type="2" bindtap="onSelectType">永久</view>
     <view class="tab-item {{selectedType === 0 ? 'active' : ''}}" data-type="0" bindtap="onSelectType">自定义</view>
-    <view class="tab-item {{selectedType === 6 ? 'active' : ''}}" data-type="6" bindtap="onSelectType">循环</view>
   </scroll-view>
 
   <!-- Time-limited (限时) Form -->
